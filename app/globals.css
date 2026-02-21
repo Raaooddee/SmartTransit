@@ -147,3 +147,8 @@
   background: none !important;
   border: none !important;
 }
+/* Stop pin: no default Leaflet box */
+.leaflet-div-icon.stop-pin-icon {
+  background: none !important;
+  border: none !important;
+}

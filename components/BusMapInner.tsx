@@ -3,8 +3,12 @@
 import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
+import route80Stops from "@/data/route80_stops.json"
 
 const MADISON_CENTER: [number, number] = [43.0731, -89.4012]
+
+type RouteStop = { stop_id: string; stop_name: string; stop_lat: string; stop_lon: string }
+const STOPS = route80Stops as RouteStop[]
 
 type CrowdRisk = "low" | "medium" | "high"
 
@@ -39,6 +43,25 @@ function busMarkerIcon(): L.DivIcon {
   })
 }
 
+const STOP_PIN_SIZE = 16
+const STOP_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="${STOP_PIN_SIZE}" height="${STOP_PIN_SIZE * 1.5}" fill="none">
+  <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="#333" stroke="#fff" stroke-width="1.2"/>
+  <circle cx="12" cy="12" r="4" fill="#fff"/>
+</svg>`
+
+function stopPinIcon(): L.DivIcon {
+  return L.divIcon({
+    className: "stop-pin-icon",
+    html: `<div style="
+      width:${STOP_PIN_SIZE}px;height:${STOP_PIN_SIZE * 1.5}px;
+      display:flex;align-items:center;justify-content:center;
+      filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+    ">${STOP_PIN_SVG}</div>`,
+    iconSize: [STOP_PIN_SIZE, STOP_PIN_SIZE * 1.5],
+    iconAnchor: [STOP_PIN_SIZE / 2, STOP_PIN_SIZE * 1.5],
+  })
+}
+
 function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
   const bg =
     risk === "low"
@@ -61,6 +84,7 @@ export function BusMapInner({
   crowdRisk: CrowdRisk | null
 }) {
   const icon = busMarkerIcon()
+  const stopIcon = stopPinIcon()
 
   return (
     <MapContainer
@@ -75,6 +99,20 @@ export function BusMapInner({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {STOPS.map((stop) => {
+        const lat = parseFloat(stop.stop_lat)
+        const lon = parseFloat(stop.stop_lon)
+        if (isNaN(lat) || isNaN(lon)) return null
+        return (
+          <Marker key={stop.stop_id} position={[lat, lon]} icon={stopIcon}>
+            <Tooltip direction="top" offset={[0, -12]} opacity={0.95} permanent={false}>
+              <strong>{stop.stop_name}</strong>
+              <br />
+              <span style={{ fontSize: "11px", color: "#666" }}>Route 80 stop</span>
+            </Tooltip>
+          </Marker>
+        )
+      })}
       {vehicles.map((v) => {
         const lat = parseFloat(v.lat)
         const lon = parseFloat(v.lon)
