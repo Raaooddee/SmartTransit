@@ -1,9 +1,11 @@
 "use client"
 
-import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet"
+import { useState, useEffect, useRef } from "react"
+import { MapContainer, TileLayer, Marker, Tooltip, CircleMarker, useMap } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 import route80Stops from "@/data/route80_stops.json"
+import { Navigation } from "lucide-react"
 
 const MADISON_CENTER: [number, number] = [43.0731, -89.4012]
 
@@ -62,6 +64,19 @@ function stopPinIcon(): L.DivIcon {
   })
 }
 
+/** Centers the map on user location when it's first set */
+function LocationCenterer({ userLocation }: { userLocation: [number, number] | null }) {
+  const map = useMap()
+  const hasCentered = useRef(false)
+  useEffect(() => {
+    if (userLocation && !hasCentered.current) {
+      map.setView(userLocation, map.getZoom())
+      hasCentered.current = true
+    }
+  }, [userLocation, map])
+  return null
+}
+
 function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
   const bg =
     risk === "low"
@@ -85,21 +100,68 @@ export function BusMapInner({
 }) {
   const icon = busMarkerIcon()
   const stopIcon = stopPinIcon()
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
+  const watchIdRef = useRef<number | null>(null)
+
+  const handleMyLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Location is not supported by your browser.")
+      return
+    }
+    const onSuccess = (pos: GeolocationPosition) => {
+      const lat = pos.coords.latitude
+      const lon = pos.coords.longitude
+      setUserLocation([lat, lon])
+    }
+    const onError = (err: GeolocationPositionError) => {
+      if (err.code === 1) alert("Location permission denied.")
+      else alert("Could not get your location: " + err.message)
+    }
+    const options: PositionOptions = { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
+    const id = navigator.geolocation.watchPosition(onSuccess, onError, options)
+    if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
+    watchIdRef.current = id
+  }
+
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
+    }
+  }, [])
 
   return (
-    <MapContainer
-      center={MADISON_CENTER}
-      zoom={14}
-      minZoom={10}
-      maxZoom={19}
-      className="h-full w-full"
-      scrollWheelZoom
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {STOPS.map((stop) => {
+    <div className="relative h-full w-full">
+      <MapContainer
+        center={MADISON_CENTER}
+        zoom={14}
+        minZoom={10}
+        maxZoom={19}
+        className="h-full w-full"
+        scrollWheelZoom
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <LocationCenterer userLocation={userLocation} />
+        {userLocation && (
+          <CircleMarker
+            center={userLocation}
+            radius={12}
+            pathOptions={{
+              fillColor: "#4285F4",
+              color: "#fff",
+              weight: 2,
+              fillOpacity: 1,
+            }}
+          >
+            <Tooltip direction="top" permanent={false}>
+              You are here
+            </Tooltip>
+          </CircleMarker>
+        )}
+        {STOPS.map((stop) => {
         const lat = parseFloat(stop.stop_lat)
         const lon = parseFloat(stop.stop_lon)
         if (isNaN(lat) || isNaN(lon)) return null
@@ -159,6 +221,15 @@ export function BusMapInner({
           </Marker>
         )
       })}
-    </MapContainer>
+      </MapContainer>
+      <button
+        type="button"
+        onClick={handleMyLocation}
+        className="absolute bottom-4 right-4 z-[1000] flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#C5050C] focus:ring-offset-2"
+        aria-label="Show my location"
+      >
+        <Navigation className="h-5 w-5 text-[#C5050C]" />
+      </button>
+    </div>
   )
 }
