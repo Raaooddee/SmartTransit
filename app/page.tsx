@@ -37,12 +37,18 @@ function timeToMinutes(hhmm: string): number {
 }
 
 export default function Home() {
+  const [showSplash, setShowSplash] = useState(true)
   const [data, setData] = useState<NextClassResponse>(mockNextClass)
   const [liveTime, setLiveTime] = useState(data.live_updated)
   const [overlayOpen, setOverlayOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [schedule, setSchedule] = useState<ScheduleClass[]>([])
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDay())
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowSplash(false), 2500)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     try {
@@ -91,6 +97,19 @@ export default function Home() {
     .filter((c) => c.days.includes(selectedDay))
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
   const hasClassOnDay = (d: number) => schedule.some((c) => c.days.includes(d))
+
+  if (showSplash) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#C5050C]">
+        <div className="splash-zoom-into-logo flex flex-col items-center justify-center gap-5 bg-[#C5050C]">
+          <SmartTransitLogo className="h-40 w-40 shrink-0 object-contain [mix-blend-mode:screen] sm:h-52 sm:w-52" />
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            SmartTransit
+          </h1>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen flex-col bg-[#F7F7F7]">

@@ -108,37 +108,42 @@ export function BusMapInner({
   const [centerTrigger, setCenterTrigger] = useState(0)
   const watchIdRef = useRef<number | null>(null)
 
+  const geoOptions: PositionOptions = {
+    enableHighAccuracy: false,
+    maximumAge: 60000,
+    timeout: 30000,
+  }
+
+  const onGeoSuccess = (pos: GeolocationPosition) => {
+    setUserLocation([pos.coords.latitude, pos.coords.longitude])
+  }
+
+  const onGeoError = (err: GeolocationPositionError) => {
+    if (err.code === 1) alert("Location permission denied.")
+    else alert("Could not get your location: " + err.message)
+  }
+
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    const onErrorSilent = () => {}
+    navigator.geolocation.getCurrentPosition(onGeoSuccess, onErrorSilent, geoOptions)
+    const id = navigator.geolocation.watchPosition(onGeoSuccess, onErrorSilent, geoOptions)
+    watchIdRef.current = id
+    return () => {
+      if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
+    }
+  }, [])
+
   const handleMyLocation = () => {
     setCenterTrigger((c) => c + 1)
     if (!navigator.geolocation) {
       alert("Location is not supported by your browser.")
       return
     }
-    const onSuccess = (pos: GeolocationPosition) => {
-      const lat = pos.coords.latitude
-      const lon = pos.coords.longitude
-      setUserLocation([lat, lon])
-    }
-    const onError = (err: GeolocationPositionError) => {
-      if (err.code === 1) alert("Location permission denied.")
-      else alert("Could not get your location: " + err.message)
-    }
-    const options: PositionOptions = {
-      enableHighAccuracy: false,
-      maximumAge: 60000,
-      timeout: 30000,
-    }
-    navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
-    const id = navigator.geolocation.watchPosition(onSuccess, onError, options)
+    navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError, geoOptions)
     if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
-    watchIdRef.current = id
+    watchIdRef.current = navigator.geolocation.watchPosition(onGeoSuccess, onGeoError, geoOptions)
   }
-
-  useEffect(() => {
-    return () => {
-      if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
-    }
-  }, [])
 
   return (
     <div className="relative h-full w-full">
@@ -146,13 +151,15 @@ export function BusMapInner({
         center={MADISON_CENTER}
         zoom={14}
         minZoom={10}
-        maxZoom={19}
+        maxZoom={18}
         className="h-full w-full"
         scrollWheelZoom
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+          maxNativeZoom={19}
         />
         <LocationCenterer userLocation={userLocation} centerTrigger={centerTrigger} />
         {userLocation && (
