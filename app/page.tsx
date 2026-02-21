@@ -94,21 +94,23 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col bg-[#F7F7F7]">
-      <header className="flex h-16 shrink-0 items-center justify-between bg-[#C5050C] px-6 text-white shadow-md">
-        <div className="flex items-center gap-3">
-          <SmartTransitLogo className="h-9 w-9 shrink-0 object-contain" />
-          <h1 className="text-xl font-bold tracking-tight text-white">
+      <header className="relative flex h-16 shrink-0 items-center justify-center bg-[#C5050C] px-6 text-white shadow-md">
+        <div className="absolute right-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setAboutOpen(true)}
+            className="text-white hover:bg-white/20 font-medium"
+          >
+            About
+          </Button>
+        </div>
+        <div className="flex items-center gap-0">
+          <SmartTransitLogo className="mt-1 h-44 w-44 shrink-0 object-contain [mix-blend-mode:screen]" />
+          <h1 className="-ml-12 text-3xl font-bold tracking-tight text-white">
             SmartTransit
           </h1>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setAboutOpen(true)}
-          className="text-white hover:bg-white/20 font-medium"
-        >
-          About
-        </Button>
       </header>
 
       <div className="flex flex-1 overflow-hidden">

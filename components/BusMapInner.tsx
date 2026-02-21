@@ -1,37 +1,12 @@
 "use client"
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 
 const MADISON_CENTER: [number, number] = [43.0731, -89.4012]
 
 type CrowdRisk = "low" | "medium" | "high"
-<<<<<<< Updated upstream
-=======
-
-const CROWD_COLORS: Record<CrowdRisk, string> = {
-  low: "#22c55e",
-  medium: "#eab308",
-  high: "#ef4444",
-}
-
-function busIconForRisk(crowdRisk: CrowdRisk | null): L.DivIcon {
-  const bg = crowdRisk ? CROWD_COLORS[crowdRisk] : "#000"
-  return L.divIcon({
-    className: "bus-marker",
-    html: `<div style="
-      width: 24px; height: 24px;
-      background: ${bg};
-      border-radius: 50%;
-      border: 3px solid white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    "></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-  })
-}
->>>>>>> Stashed changes
 
 const CROWD_COLORS: Record<CrowdRisk, string> = {
   low: "#22c55e",
@@ -55,9 +30,6 @@ function busIconForRisk(crowdRisk: CrowdRisk | null): L.DivIcon {
   })
 }
 
-<<<<<<< Updated upstream
-export function BusMapInner({ vehicles }: { vehicles: BusVehicle[] }) {
-=======
 function MapUpdater({ vehicles }: { vehicles: BusVehicle[] }) {
   const map = useMap()
   if (vehicles.length === 0) return null
@@ -96,7 +68,6 @@ export function BusMapInner({
 }) {
   const icon = busIconForRisk(crowdRisk)
 
->>>>>>> Stashed changes
   return (
     <MapContainer
       center={MADISON_CENTER}
@@ -108,6 +79,7 @@ export function BusMapInner({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <MapUpdater vehicles={vehicles} />
       {vehicles.map((v) => {
         const lat = parseFloat(v.lat)
         const lon = parseFloat(v.lon)
