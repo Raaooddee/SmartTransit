@@ -15,9 +15,7 @@ export const mockPrediction: PredictionResponse = {
 export const mockNextClass: NextClassResponse = {
   next_class: "CS — 9:30 @ Engineering Hall",
   leave_in: "6–12 minutes (departure window)",
-  on_time_chance: 92,
-  reliability_score: 91,
-  route: "80",
+  updated_departure_time: "9:02 AM",
   crowd_risk: "high",
   ghost_risk: "low",
   live_updated: "12:41:18"

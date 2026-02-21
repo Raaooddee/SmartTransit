@@ -5,18 +5,20 @@ import type { ScheduleClass } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { LocationInput } from "@/components/LocationInput"
 import { X } from "lucide-react"
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-function emptyClass(): ScheduleClass {
+function emptyItem(type: "class" | "event"): ScheduleClass {
   return {
     id: crypto.randomUUID(),
+    type,
     name: "",
     location: "",
     startTime: "09:00",
     endTime: "09:50",
-    days: [1, 3, 5],
+    days: type === "class" ? [1, 3, 5] : [1],
   }
 }
 
@@ -28,19 +30,20 @@ type Props = {
 }
 
 export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule }: Props) {
-  const [classes, setClasses] = useState<ScheduleClass[]>([emptyClass()])
+  const [classes, setClasses] = useState<ScheduleClass[]>([emptyItem("class")])
 
   useEffect(() => {
     if (open) {
       setClasses(
         initialSchedule?.length
-          ? initialSchedule.map((c) => ({ ...c, id: c.id || crypto.randomUUID() }))
-          : [emptyClass()]
+          ? initialSchedule.map((c) => ({ ...c, id: c.id || crypto.randomUUID(), type: c.type ?? "class" }))
+          : [emptyItem("class")]
       )
     }
   }, [open])
 
-  const addClass = () => setClasses((c) => [...c, emptyClass()])
+  const addClass = () => setClasses((c) => [...c, emptyItem("class")])
+  const addEvent = () => setClasses((c) => [...c, emptyItem("event")])
 
   const updateClass = (id: string, updates: Partial<ScheduleClass>) => {
     setClasses((c) =>
@@ -100,17 +103,19 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          Add your classes. They will show on the left as today&apos;s schedule.
+          Add classes or events. They will show in Your schedule by day.
         </p>
 
         <div className="space-y-4">
           {classes.map((cls) => (
             <div
               key={cls.id}
-              className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4 space-y-3"
+              className={`rounded-xl border p-4 space-y-3 ${cls.type === "event" ? "border-amber-200 bg-amber-50/50" : "border-gray-200 bg-[#F7F7F7]"}`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-500">Class</span>
+                <span className={`text-xs font-medium uppercase tracking-wider ${cls.type === "event" ? "text-amber-700" : "text-gray-500"}`}>
+                  {cls.type === "class" ? "Class" : "Event"}
+                </span>
                 {classes.length > 1 && (
                   <Button
                     type="button"
@@ -125,9 +130,9 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <Label className="text-xs text-gray-600">Name (e.g. CS 200)</Label>
+                  <Label className="text-xs text-gray-600">{cls.type === "event" ? "Event name" : "Name (e.g. CS 200)"}</Label>
                   <Input
-                    placeholder="CS 200"
+                    placeholder={cls.type === "event" ? "Study group, Meeting…" : "CS 200"}
                     value={cls.name}
                     onChange={(e) => updateClass(cls.id, { name: e.target.value })}
                     className="mt-1 border-gray-300 bg-white text-[#333333] placeholder:text-gray-400"
@@ -135,10 +140,10 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
                 </div>
                 <div>
                   <Label className="text-xs text-gray-600">Location</Label>
-                  <Input
+                  <LocationInput
                     placeholder="Engineering Hall"
                     value={cls.location}
-                    onChange={(e) => updateClass(cls.id, { location: e.target.value })}
+                    onChange={(location) => updateClass(cls.id, { location })}
                     className="mt-1 border-gray-300 bg-white text-[#333333] placeholder:text-gray-400"
                   />
                 </div>
@@ -184,17 +189,26 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
           ))}
         </div>
 
-        <div className="mt-6 flex gap-3">
-          <Button
-            variant="outline"
-            onClick={addClass}
-            className="flex-1 border-gray-300 text-[#333333] hover:bg-[#F7F7F7]"
-          >
-            Add class
-          </Button>
+        <div className="mt-6 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={addClass}
+              className="flex-1 border-gray-300 text-[#333333] hover:bg-[#F7F7F7]"
+            >
+              Add class
+            </Button>
+            <Button
+              variant="outline"
+              onClick={addEvent}
+              className="flex-1 border-amber-300 text-amber-800 hover:bg-amber-50"
+            >
+              Add event
+            </Button>
+          </div>
           <Button
             onClick={handleImport}
-            className="flex-1 bg-[#C5050C] text-white hover:bg-[#9B0000]"
+            className="w-full bg-[#C5050C] text-white hover:bg-[#9B0000]"
           >
             Complete schedule
           </Button>

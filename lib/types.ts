@@ -14,9 +14,7 @@ export type PredictionResponse = {
 export type NextClassResponse = {
   next_class: string
   leave_in: string
-  on_time_chance: number
-  reliability_score: number
-  route: string
+  updated_departure_time: string
   crowd_risk: "low" | "medium" | "high"
   ghost_risk: "low" | "high"
   live_updated: string
@@ -33,12 +31,13 @@ export type BusVehicle = {
   psgld?: string
 }
 
-/** A single class in the user's schedule */
+/** A single class or event in the user's schedule */
 export type ScheduleClass = {
   id: string
+  type: "class" | "event"
   name: string
   location: string
-  startTime: string // "09:30"
-  endTime: string   // "10:45"
-  days: number[]   // 0 = Sun, 1 = Mon, ... 6 = Sat
+  startTime: string
+  endTime: string
+  days: number[]
 }

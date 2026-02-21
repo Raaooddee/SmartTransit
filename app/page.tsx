@@ -6,7 +6,7 @@ import { mockNextClass } from "@/lib/mock"
 import type { NextClassResponse, ScheduleClass } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Route, Users, Ghost, RefreshCw, Plus } from "lucide-react"
+import { MapPin, Users, Ghost, RefreshCw, Plus } from "lucide-react"
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
 
@@ -30,12 +30,6 @@ function formatTime(t: string) {
   return `${h - 12}:${String(m).padStart(2, "0")} PM`
 }
 
-function reliabilityColor(value: number): string {
-  if (value > 70) return "text-green-600 font-bold"
-  if (value >= 50) return "text-amber-600 font-bold"
-  return "text-red-600 font-bold"
-}
-
 function timeToMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number)
   return (h ?? 0) * 60 + (m ?? 0)
@@ -51,7 +45,10 @@ export default function Home() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(SCHEDULE_STORAGE_KEY)
-      if (raw) setSchedule(JSON.parse(raw))
+      if (raw) {
+        const parsed = JSON.parse(raw) as ScheduleClass[]
+        setSchedule(parsed.map((c) => ({ ...c, type: c.type ?? "class" })))
+      }
     } catch {
       // ignore
     }
@@ -88,7 +85,7 @@ export default function Home() {
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
   const upcomingToday = todayClasses.filter((c) => timeToMinutes(c.endTime) > currentMinutes)
   const next3Classes = upcomingToday.slice(0, 3)
-  const classesForSelectedDay = schedule
+  const itemsForSelectedDay = schedule
     .filter((c) => c.days.includes(selectedDay))
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
   const hasClassOnDay = (d: number) => schedule.some((c) => c.days.includes(d))
@@ -129,8 +126,13 @@ export default function Home() {
           <div className="mb-4 flex flex-col gap-3">
             {next3Classes.length > 0 ? (
               next3Classes.map((cls) => (
-                <div key={cls.id} className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
-                  <p className="font-semibold text-[#333333]">{cls.name}</p>
+                <div key={cls.id} className={`rounded-xl border p-4 ${cls.type === "event" ? "border-amber-200 bg-amber-50/50" : "border-gray-200 bg-[#F7F7F7]"}`}>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-[#333333]">{cls.name}</p>
+                    {cls.type === "event" && (
+                      <span className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase bg-amber-200/80 text-amber-800">Event</span>
+                    )}
+                  </div>
                   <p className="mt-0.5 text-sm text-gray-600">
                     {formatTime(cls.startTime)} – {formatTime(cls.endTime)}
                   </p>
@@ -156,17 +158,8 @@ export default function Home() {
               <p className="mt-1 font-semibold text-[#C5050C]">{data.leave_in}</p>
             </div>
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-              <span className="text-sm text-gray-600">On-time chance</span>
-              <span className={reliabilityColor(data.on_time_chance)}>{data.on_time_chance}%</span>
-            </div>
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-              <span className="text-sm text-gray-600">Reliability</span>
-              <span className={reliabilityColor(data.reliability_score)}>{data.reliability_score}/100</span>
-            </div>
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-              <Route className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">Route</span>
-              <span className="font-semibold text-[#333333]">{data.route}</span>
+              <span className="text-sm text-gray-600">Updated departure time</span>
+              <span className="font-semibold text-[#C5050C]">{data.updated_departure_time ?? "—"}</span>
             </div>
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
               <Users className="h-4 w-4 text-gray-500" />
@@ -192,7 +185,7 @@ export default function Home() {
             </h2>
             {schedule.length > 0 ? (
               <>
-                <p className="mb-2 text-xs text-gray-500">Tap a day to view classes</p>
+                <p className="mb-2 text-xs text-gray-500">Tap a day to view schedule</p>
                 <div className="mb-4 flex gap-1 rounded-lg bg-[#F7F7F7] p-1">
                   {DAY_SHORT.map((label, i) => (
                     <button
@@ -215,14 +208,19 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-500">{DAY_NAMES[selectedDay]}’s classes</p>
-                  {classesForSelectedDay.length > 0 ? (
-                    classesForSelectedDay.map((cls) => (
+                  <p className="text-xs font-medium text-gray-500">{DAY_NAMES[selectedDay]}’s schedule</p>
+                  {itemsForSelectedDay.length > 0 ? (
+                    itemsForSelectedDay.map((cls) => (
                       <div
                         key={cls.id}
-                        className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-3.5"
+                        className={`rounded-xl border p-3.5 ${cls.type === "event" ? "border-amber-200 bg-amber-50/50" : "border-gray-200 bg-[#F7F7F7]"}`}
                       >
-                        <p className="font-semibold text-[#333333]">{cls.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[#333333]">{cls.name}</p>
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase ${cls.type === "event" ? "bg-amber-200/80 text-amber-800" : "bg-gray-200 text-gray-600"}`}>
+                            {cls.type}
+                          </span>
+                        </div>
                         <p className="mt-0.5 text-sm text-gray-600">
                           {formatTime(cls.startTime)} – {formatTime(cls.endTime)}
                         </p>
@@ -236,7 +234,7 @@ export default function Home() {
                     ))
                   ) : (
                     <p className="rounded-xl border border-dashed border-gray-200 bg-[#F7F7F7] py-4 text-center text-sm text-gray-500">
-                      No classes on {DAY_NAMES[selectedDay]}
+                      Nothing on {DAY_NAMES[selectedDay]}
                     </p>
                   )}
                 </div>
