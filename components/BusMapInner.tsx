@@ -90,7 +90,18 @@ export function BusMapInner({
               <strong>Bus {v.vid}</strong>
               <br />
               Route {v.rt}
-              {v.spd && ` • ${v.spd} mph`}
+              {v.spd != null && v.spd !== "" && (
+                <>
+                  <br />
+                  Speed: {v.spd} mph
+                </>
+              )}
+              {v.psgld != null && v.psgld !== "" && (
+                <>
+                  <br />
+                  Passengers (psgld): {v.psgld}
+                </>
+              )}
               {crowdRisk && (
                 <>
                   <br />
