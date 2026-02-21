@@ -1,6 +1,6 @@
 "use client"
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Tooltip } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 
@@ -81,7 +81,7 @@ export function BusMapInner({
         if (isNaN(lat) || isNaN(lon)) return null
         return (
           <Marker key={v.vid} position={[lat, lon]} icon={icon}>
-            <Popup>
+            <Tooltip direction="top" offset={[0, -20]} opacity={0.95} permanent={false}>
               <strong>Bus {v.vid}</strong>
               <br />
               Route {v.rt}
@@ -117,7 +117,7 @@ export function BusMapInner({
                   <CrowdRiskBadge risk={crowdRisk} />
                 </>
               )}
-            </Popup>
+            </Tooltip>
           </Marker>
         )
       })}
