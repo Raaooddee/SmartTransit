@@ -1,6 +1,6 @@
 "use client"
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 
@@ -30,21 +30,6 @@ function busIconForRisk(crowdRisk: CrowdRisk | null): L.DivIcon {
   })
 }
 
-function MapUpdater({ vehicles }: { vehicles: BusVehicle[] }) {
-  const map = useMap()
-  if (vehicles.length === 0) return null
-  const lats = vehicles.map((v) => parseFloat(v.lat)).filter((n) => !isNaN(n))
-  const lngs = vehicles.map((v) => parseFloat(v.lon)).filter((n) => !isNaN(n))
-  if (lats.length && lngs.length) {
-    const bounds = L.latLngBounds(
-      [Math.min(...lats), Math.min(...lngs)],
-      [Math.max(...lats), Math.max(...lngs)]
-    )
-    map.fitBounds(bounds.pad(0.2))
-  }
-  return null
-}
-
 function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
   const bg =
     risk === "low"
@@ -72,6 +57,8 @@ export function BusMapInner({
     <MapContainer
       center={MADISON_CENTER}
       zoom={14}
+      minZoom={10}
+      maxZoom={19}
       className="h-full w-full"
       scrollWheelZoom
     >
@@ -79,7 +66,6 @@ export function BusMapInner({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <MapUpdater vehicles={vehicles} />
       {vehicles.map((v) => {
         const lat = parseFloat(v.lat)
         const lon = parseFloat(v.lon)
