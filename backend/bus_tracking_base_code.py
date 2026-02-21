@@ -1,8 +1,11 @@
 import os
 import requests
 import pandas as pd
+from pathlib import Path
 from dotenv import load_dotenv
 
+# Load .env.local (same as Next.js) then .env
+load_dotenv(Path(__file__).resolve().parent / ".env.local")
 load_dotenv()
 
 # ==========================
