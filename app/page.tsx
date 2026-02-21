@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Users, Ghost, RefreshCw, Plus } from "lucide-react"
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
+import { AboutOverlay } from "@/components/AboutOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
 
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
@@ -39,6 +40,7 @@ export default function Home() {
   const [data, setData] = useState<NextClassResponse>(mockNextClass)
   const [liveTime, setLiveTime] = useState(data.live_updated)
   const [overlayOpen, setOverlayOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [schedule, setSchedule] = useState<ScheduleClass[]>([])
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDay())
 
@@ -94,15 +96,19 @@ export default function Home() {
     <div className="flex h-screen flex-col bg-[#F7F7F7]">
       <header className="flex h-16 shrink-0 items-center justify-between bg-[#C5050C] px-6 text-white shadow-md">
         <div className="flex items-center gap-3">
-          <SmartTransitLogo className="h-9 w-9 shrink-0 [&_*]:fill-white" />
+          <SmartTransitLogo className="h-9 w-9 shrink-0 object-contain" />
           <h1 className="text-xl font-bold tracking-tight text-white">
             SmartTransit
           </h1>
         </div>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <span className="rounded-full bg-white/20 px-3 py-1">Route 80</span>
-          <span className="text-white/95">UW–Madison</span>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setAboutOpen(true)}
+          className="text-white hover:bg-white/20 font-medium"
+        >
+          About
+        </Button>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
@@ -258,6 +264,7 @@ export default function Home() {
         onImport={handleImportSchedule}
         initialSchedule={schedule}
       />
+      <AboutOverlay open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   )
 }
