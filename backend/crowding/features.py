@@ -31,9 +31,11 @@ def get_time_features(now: datetime | None = None) -> dict:
     in_rush_hour = any(start <= hour < end for start, end in RUSH_HOURS)
 
     time_str = f"{hour:02d}:{minute:02d}"
-    in_dismissal_window = (
-        not is_weekend
-        and any(w["start"] <= time_str <= w["end"] for w in DISMISSAL_WINDOWS)
+    # Weekday windows apply Mon–Fri; same time windows extended to Sat/Sun for weekend testing
+    in_dismissal_window = any(
+        w["start"] <= time_str <= w["end"]
+        and ("days" not in w or len(w["days"]) == 0 or day_of_week in w["days"])
+        for w in DISMISSAL_WINDOWS
     )
 
     return {

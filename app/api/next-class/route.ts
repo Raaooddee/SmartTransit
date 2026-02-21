@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { mockNextClass } from "@/lib/mock"
-import { getCrowding } from "@/lib/crowding"
 import type { NextClassResponse } from "@/lib/types"
 
 const CROWDING_SERVICE_URL = process.env.CROWDING_SERVICE_URL
@@ -11,22 +10,20 @@ export async function GET(request: Request) {
 
   const data: NextClassResponse = { ...mockNextClass }
 
-  try {
-    if (CROWDING_SERVICE_URL) {
+  if (CROWDING_SERVICE_URL) {
+    try {
       const url = new URL("/crowding", CROWDING_SERVICE_URL)
       url.searchParams.set("stop", stop)
       const res = await fetch(url.toString(), { next: { revalidate: 60 } })
       if (res.ok) {
         const crowding = await res.json()
         data.crowd_risk = crowding.crowd_risk
-      } else throw new Error(String(res.status))
-    } else {
-      const crowding = await getCrowding({ stopNameOrId: stop })
-      data.crowd_risk = crowding.crowd_risk
+      }
+    } catch {
+      // use mock crowd_risk when service down
     }
-  } catch {
-    // keep mock crowd_risk on failure
   }
+  // If CROWDING_SERVICE_URL not set, keep mock crowd_risk
 
   data.live_updated = new Date().toLocaleTimeString("en-US", {
     hour12: false,

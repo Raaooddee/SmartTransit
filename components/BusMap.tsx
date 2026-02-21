@@ -5,19 +5,33 @@ import type { BusVehicle } from "@/lib/types"
 
 const MADISON_CENTER = { lat: 43.0731, lng: -89.4012 } as const
 
+type CrowdRisk = "low" | "medium" | "high"
+
+const POLL_MS = 60 * 1000 // every minute
+
 export function BusMap() {
   const [vehicles, setVehicles] = useState<BusVehicle[]>([])
-  const [MapComponent, setMapComponent] = useState<React.ComponentType<{ vehicles: BusVehicle[] }> | null>(null)
+  const [crowdRisk, setCrowdRisk] = useState<CrowdRisk | null>(null)
+  const [MapComponent, setMapComponent] = useState<
+    React.ComponentType<{ vehicles: BusVehicle[]; crowdRisk: CrowdRisk | null }> | null
+  >(null)
 
-  const fetchBuses = () => {
+  const fetchData = () => {
     fetch("/api/buses")
       .then((r) => r.json())
       .then((d) => setVehicles(d.vehicles || []))
+
+    fetch("/api/crowding?route=80")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.crowd_risk) setCrowdRisk(d.crowd_risk)
+      })
+      .catch(() => setCrowdRisk(null))
   }
 
   useEffect(() => {
-    fetchBuses()
-    const interval = setInterval(fetchBuses, 5 * 60 * 1000) // every 5 minutes
+    fetchData()
+    const interval = setInterval(fetchData, POLL_MS)
     return () => clearInterval(interval)
   }, [])
 
@@ -33,5 +47,5 @@ export function BusMap() {
     )
   }
 
-  return <MapComponent vehicles={vehicles} />
+  return <MapComponent vehicles={vehicles} crowdRisk={crowdRisk} />
 }

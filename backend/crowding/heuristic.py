@@ -39,11 +39,10 @@ def compute_crowding_from_features(
 
     if time_features.get("is_weekend"):
         score += 0.05
-    else:
-        if time_features.get("in_rush_hour"):
-            score += 0.25
-        if time_features.get("in_dismissal_window"):
-            score += 0.2
+    if time_features.get("in_rush_hour"):
+        score += 0.25
+    if time_features.get("in_dismissal_window"):
+        score += 0.2
 
     if weather.get("is_precipitating"):
         score += 0.2
