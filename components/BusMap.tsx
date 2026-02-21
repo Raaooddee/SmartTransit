@@ -9,10 +9,16 @@ export function BusMap() {
   const [vehicles, setVehicles] = useState<BusVehicle[]>([])
   const [MapComponent, setMapComponent] = useState<React.ComponentType<{ vehicles: BusVehicle[] }> | null>(null)
 
-  useEffect(() => {
+  const fetchBuses = () => {
     fetch("/api/buses")
       .then((r) => r.json())
       .then((d) => setVehicles(d.vehicles || []))
+  }
+
+  useEffect(() => {
+    fetchBuses()
+    const interval = setInterval(fetchBuses, 5 * 60 * 1000) // every 5 minutes
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -21,7 +27,7 @@ export function BusMap() {
 
   if (!MapComponent) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-zinc-100 text-zinc-500">
+      <div className="h-full w-full flex items-center justify-center bg-[#F7F7F7] text-gray-500">
         Loading map…
       </div>
     )

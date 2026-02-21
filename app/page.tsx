@@ -3,21 +3,59 @@
 import dynamic from "next/dynamic"
 import { useState, useEffect } from "react"
 import { mockNextClass } from "@/lib/mock"
-import type { NextClassResponse } from "@/lib/types"
+import type { NextClassResponse, ScheduleClass } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Clock, Route, Users, Ghost, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { MapPin, Route, Users, Ghost, RefreshCw, Plus } from "lucide-react"
+import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
+import { SmartTransitLogo } from "@/components/SmartTransitLogo"
 
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
+const SCHEDULE_STORAGE_KEY = "smarttransit-schedule"
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+const DAY_SHORT = ["S", "M", "T", "W", "T", "F", "S"]
+
 function riskBadge(risk: NextClassResponse["crowd_risk"] | NextClassResponse["ghost_risk"]) {
-  if (risk === "low") return <Badge className="bg-emerald-100 text-emerald-800">Low</Badge>
-  if (risk === "medium") return <Badge variant="secondary">Medium</Badge>
-  return <Badge variant="destructive">High</Badge>
+  if (risk === "low") return <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/40">Low</Badge>
+  if (risk === "medium") return <Badge className="bg-amber-500/20 text-amber-800 border-amber-500/40">Medium</Badge>
+  return <Badge className="bg-red-500/20 text-[#9B0000] border-red-500/40">High</Badge>
+}
+
+function formatTime(t: string) {
+  const [h, m] = t.split(":").map(Number)
+  if (h === 0) return `12:${String(m).padStart(2, "0")} AM`
+  if (h < 12) return `${h}:${String(m).padStart(2, "0")} AM`
+  if (h === 12) return `12:${String(m).padStart(2, "0")} PM`
+  return `${h - 12}:${String(m).padStart(2, "0")} PM`
+}
+
+function reliabilityColor(value: number): string {
+  if (value > 70) return "text-green-600 font-bold"
+  if (value >= 50) return "text-amber-600 font-bold"
+  return "text-red-600 font-bold"
+}
+
+function timeToMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number)
+  return (h ?? 0) * 60 + (m ?? 0)
 }
 
 export default function Home() {
   const [data, setData] = useState<NextClassResponse>(mockNextClass)
   const [liveTime, setLiveTime] = useState(data.live_updated)
+  const [overlayOpen, setOverlayOpen] = useState(false)
+  const [schedule, setSchedule] = useState<ScheduleClass[]>([])
+  const [selectedDay, setSelectedDay] = useState(() => new Date().getDay())
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SCHEDULE_STORAGE_KEY)
+      if (raw) setSchedule(JSON.parse(raw))
+    } catch {
+      // ignore
+    }
+  }, [])
 
   useEffect(() => {
     fetch("/api/next-class")
@@ -33,95 +71,195 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(schedule))
+  }, [schedule])
+
+  const handleImportSchedule = (classes: ScheduleClass[]) => {
+    setSchedule(classes)
+  }
+
+  const now = new Date()
+  const today = now.getDay()
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const todayClasses = schedule
+    .filter((c) => c.days.includes(today))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+  const upcomingToday = todayClasses.filter((c) => timeToMinutes(c.endTime) > currentMinutes)
+  const next3Classes = upcomingToday.slice(0, 3)
+  const classesForSelectedDay = schedule
+    .filter((c) => c.days.includes(selectedDay))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+  const hasClassOnDay = (d: number) => schedule.some((c) => c.days.includes(d))
+
   return (
-    <div className="flex h-screen flex-col bg-white">
-      {/* Header */}
-      <header className="flex h-14 items-center justify-between border-b border-zinc-200 px-6">
-        <h1 className="text-lg font-semibold text-zinc-900">SmartTransit</h1>
-        <div className="flex items-center gap-4 text-sm text-zinc-600">
-          <span>Route 80</span>
-          <span>UW–Madison</span>
+    <div className="flex h-screen flex-col bg-[#F7F7F7]">
+      <header className="flex h-16 shrink-0 items-center justify-between bg-[#C5050C] px-6 text-white shadow-md">
+        <div className="flex items-center gap-3">
+          <SmartTransitLogo className="h-9 w-9 shrink-0 [&_*]:fill-white" />
+          <h1 className="text-xl font-bold tracking-tight text-white">
+            SmartTransit
+          </h1>
+        </div>
+        <div className="flex items-center gap-4 text-sm font-medium">
+          <span className="rounded-full bg-white/20 px-3 py-1">Route 80</span>
+          <span className="text-white/95">UW–Madison</span>
         </div>
       </header>
 
-      {/* Main split layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left panel - Next Class Card (Uber "Get a ride" style) */}
-        <aside className="flex w-full max-w-md flex-col border-r border-zinc-200 bg-white p-6">
-          <h2 className="mb-6 text-xl font-bold text-zinc-900">Next Class</h2>
+        <aside className="flex w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5">
+          {/* 1) Next class + button */}
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
+              Next class
+            </h2>
+            <Button
+              size="icon"
+              className="h-9 w-9 shrink-0 rounded-full bg-[#C5050C] text-white hover:bg-[#9B0000]"
+              onClick={() => setOverlayOpen(true)}
+              aria-label="Add or edit schedule"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          </div>
 
-          <div className="flex flex-col gap-4">
-            {/* Next class */}
-            <div className="flex items-start gap-3 rounded-lg bg-zinc-50 p-4">
-              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-zinc-500" />
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Next class</p>
-                <p className="mt-0.5 font-semibold text-zinc-900">{data.next_class}</p>
+          {/* 2) Next 3 class cards */}
+          <div className="mb-4 flex flex-col gap-3">
+            {next3Classes.length > 0 ? (
+              next3Classes.map((cls) => (
+                <div key={cls.id} className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
+                  <p className="font-semibold text-[#333333]">{cls.name}</p>
+                  <p className="mt-0.5 text-sm text-gray-600">
+                    {formatTime(cls.startTime)} – {formatTime(cls.endTime)}
+                  </p>
+                  {cls.location && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-[#C5050C]">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      {cls.location}
+                    </p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
+                <p className="text-sm text-gray-500">No more classes today. Add classes with the + button.</p>
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* Leave in */}
-            <div className="flex items-start gap-3 rounded-lg bg-zinc-50 p-4">
-              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-zinc-500" />
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Leave in</p>
-                <p className="mt-0.5 font-semibold text-zinc-900">{data.leave_in}</p>
-              </div>
+          {/* 3) Stats */}
+          <div className="mb-6 flex flex-col gap-3">
+            <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Leave in</p>
+              <p className="mt-1 font-semibold text-[#C5050C]">{data.leave_in}</p>
             </div>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
+              <span className="text-sm text-gray-600">On-time chance</span>
+              <span className={reliabilityColor(data.on_time_chance)}>{data.on_time_chance}%</span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
+              <span className="text-sm text-gray-600">Reliability</span>
+              <span className={reliabilityColor(data.reliability_score)}>{data.reliability_score}/100</span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
+              <Route className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Route</span>
+              <span className="font-semibold text-[#333333]">{data.route}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
+              <Users className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Crowd risk</span>
+              {riskBadge(data.crowd_risk)}
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
+              <Ghost className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Ghost risk</span>
+              {riskBadge(data.ghost_risk)}
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-2.5">
+              <RefreshCw className="h-4 w-4 text-[#C5050C]" />
+              <span className="text-xs text-gray-500">Live</span>
+              <span className="font-mono text-sm font-medium text-[#333333]">{liveTime}</span>
+            </div>
+          </div>
 
-            {/* On-time chance */}
-            <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-4">
-              <span className="text-sm text-zinc-600">On-time chance</span>
-              <span className="text-lg font-bold text-zinc-900">{data.on_time_chance}%</span>
-            </div>
-
-            {/* Reliability Score */}
-            <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-4">
-              <span className="text-sm text-zinc-600">Reliability Score</span>
-              <span className="text-lg font-bold text-zinc-900">{data.reliability_score}/100</span>
-            </div>
-
-            {/* Route */}
-            <div className="flex items-center gap-3 rounded-lg bg-zinc-50 p-4">
-              <Route className="h-5 w-5 shrink-0 text-zinc-500" />
-              <div className="flex flex-1 items-center justify-between">
-                <span className="text-sm text-zinc-600">Route</span>
-                <span className="font-semibold text-zinc-900">{data.route}</span>
-              </div>
-            </div>
-
-            {/* Crowd Risk */}
-            <div className="flex items-center gap-3 rounded-lg bg-zinc-50 p-4">
-              <Users className="h-5 w-5 shrink-0 text-zinc-500" />
-              <div className="flex flex-1 items-center justify-between">
-                <span className="text-sm text-zinc-600">Crowd Risk</span>
-                {riskBadge(data.crowd_risk)}
-              </div>
-            </div>
-
-            {/* Ghost Risk */}
-            <div className="flex items-center gap-3 rounded-lg bg-zinc-50 p-4">
-              <Ghost className="h-5 w-5 shrink-0 text-zinc-500" />
-              <div className="flex flex-1 items-center justify-between">
-                <span className="text-sm text-zinc-600">Ghost Risk</span>
-                {riskBadge(data.ghost_risk)}
-              </div>
-            </div>
-
-            {/* Live updated */}
-            <div className="flex items-center gap-2 rounded-lg bg-zinc-100 py-3 px-4">
-              <RefreshCw className="h-4 w-4 text-zinc-500" />
-              <span className="text-sm text-zinc-600">Live updated:</span>
-              <span className="font-mono text-sm font-medium text-zinc-900">{liveTime}</span>
-            </div>
+          {/* 4) Your schedule (bottom) with week strip + day view */}
+          <div className="mt-auto border-t border-gray-200 pt-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
+              Your schedule
+            </h2>
+            {schedule.length > 0 ? (
+              <>
+                <p className="mb-2 text-xs text-gray-500">Tap a day to view classes</p>
+                <div className="mb-4 flex gap-1 rounded-lg bg-[#F7F7F7] p-1">
+                  {DAY_SHORT.map((label, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedDay(i)}
+                      className={`flex flex-1 flex-col items-center rounded-md py-2 text-xs font-medium transition-colors ${
+                        selectedDay === i
+                          ? "bg-[#C5050C] text-white shadow-sm"
+                          : hasClassOnDay(i)
+                            ? "bg-white text-[#333333] hover:bg-gray-100"
+                            : "text-gray-400 hover:bg-white/80"
+                      }`}
+                    >
+                      <span>{label}</span>
+                      {hasClassOnDay(i) && (
+                        <span className={`mt-0.5 h-1 w-1 rounded-full ${selectedDay === i ? "bg-white/80" : "bg-[#C5050C]"}`} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-gray-500">{DAY_NAMES[selectedDay]}’s classes</p>
+                  {classesForSelectedDay.length > 0 ? (
+                    classesForSelectedDay.map((cls) => (
+                      <div
+                        key={cls.id}
+                        className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-3.5"
+                      >
+                        <p className="font-semibold text-[#333333]">{cls.name}</p>
+                        <p className="mt-0.5 text-sm text-gray-600">
+                          {formatTime(cls.startTime)} – {formatTime(cls.endTime)}
+                        </p>
+                        {cls.location && (
+                          <p className="mt-1 flex items-center gap-1.5 text-xs text-[#C5050C]">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            {cls.location}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-gray-200 bg-[#F7F7F7] py-4 text-center text-sm text-gray-500">
+                      No classes on {DAY_NAMES[selectedDay]}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <p className="rounded-xl border border-dashed border-gray-200 bg-[#F7F7F7] py-6 text-center text-sm text-gray-500">
+                No schedule yet. Use the + button above to add classes.
+              </p>
+            )}
           </div>
         </aside>
 
-        {/* Right panel - Map */}
-        <main className="relative flex-1">
+        <main className="relative flex-1 border-l border-gray-200 bg-[#F7F7F7]">
           <BusMap />
         </main>
       </div>
+
+      <ImportScheduleOverlay
+        open={overlayOpen}
+        onClose={() => setOverlayOpen(false)}
+        onImport={handleImportSchedule}
+        initialSchedule={schedule}
+      />
     </div>
   )
 }

@@ -32,3 +32,13 @@ export type BusVehicle = {
   tmstmp?: string
   psgld?: string
 }
+
+/** A single class in the user's schedule */
+export type ScheduleClass = {
+  id: string
+  name: string
+  location: string
+  startTime: string // "09:30"
+  endTime: string   // "10:45"
+  days: number[]   // 0 = Sun, 1 = Mon, ... 6 = Sat
+}

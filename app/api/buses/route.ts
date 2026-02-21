@@ -22,7 +22,7 @@ export async function GET() {
   try {
     const res = await fetch(
       `${BASE_URL}/getvehicles?key=${apiKey}&format=json&rt=${ROUTES}&tmres=s`,
-      { next: { revalidate: 15 } }
+      { next: { revalidate: 300 } }
     )
     if (!res.ok) {
       return NextResponse.json({ vehicles: MOCK_BUSES })
