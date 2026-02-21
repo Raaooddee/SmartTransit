@@ -141,3 +141,9 @@
   --badger-gray: #333333;
   --badger-light-gray: #F7F7F7;
 }
+
+/* Bus map marker: custom icon, no default Leaflet box */
+.leaflet-div-icon.bus-marker-icon {
+  background: none !important;
+  border: none !important;
+}

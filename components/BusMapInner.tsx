@@ -8,25 +8,34 @@ const MADISON_CENTER: [number, number] = [43.0731, -89.4012]
 
 type CrowdRisk = "low" | "medium" | "high"
 
-const CROWD_COLORS: Record<CrowdRisk, string> = {
-  low: "#22c55e",
-  medium: "#eab308",
-  high: "#ef4444",
-}
+const BUS_ICON_SIZE = 64
 
-function busIconForRisk(crowdRisk: CrowdRisk | null): L.DivIcon {
-  const bg = crowdRisk ? CROWD_COLORS[crowdRisk] : "#000"
+const BUS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 20" width="58" height="34" fill="none">
+  <!-- shorter bus body -->
+  <rect x="1" y="4" width="32" height="10" rx="2" fill="#C5050C" stroke="#fff" stroke-width="1.2"/>
+  <!-- front windshield -->
+  <rect x="3" y="5" width="5" height="6" rx="0.8" fill="#7ec8e3" stroke="#fff" stroke-width="0.6"/>
+  <!-- side windows (3 instead of 5) -->
+  <rect x="10" y="5.5" width="4" height="5" rx="0.4" fill="#7ec8e3" stroke="#fff" stroke-width="0.5"/>
+  <rect x="15.5" y="5.5" width="4" height="5" rx="0.4" fill="#7ec8e3" stroke="#fff" stroke-width="0.5"/>
+  <rect x="21" y="5.5" width="4" height="5" rx="0.4" fill="#7ec8e3" stroke="#fff" stroke-width="0.5"/>
+  <!-- rear door -->
+  <rect x="27" y="5.5" width="3.5" height="6" rx="0.4" fill="#fff" stroke="#333" stroke-width="0.5"/>
+  <!-- wheels -->
+  <circle cx="10" cy="15.5" r="2.8" fill="#2a2a2a" stroke="#fff" stroke-width="0.8"/>
+  <circle cx="24" cy="15.5" r="2.8" fill="#2a2a2a" stroke="#fff" stroke-width="0.8"/>
+</svg>`
+
+function busMarkerIcon(): L.DivIcon {
   return L.divIcon({
-    className: "bus-marker",
+    className: "bus-marker-icon",
     html: `<div style="
-      width: 24px; height: 24px;
-      background: ${bg};
-      border-radius: 50%;
-      border: 3px solid white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    "></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+      width:${BUS_ICON_SIZE}px;height:${BUS_ICON_SIZE}px;
+      display:flex;align-items:center;justify-content:center;
+      filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5)) drop-shadow(0 0 1px #fff);
+    " title="Bus">${BUS_SVG}</div>`,
+    iconSize: [BUS_ICON_SIZE, BUS_ICON_SIZE],
+    iconAnchor: [BUS_ICON_SIZE / 2, BUS_ICON_SIZE / 2],
   })
 }
 
@@ -51,7 +60,7 @@ export function BusMapInner({
   vehicles: BusVehicle[]
   crowdRisk: CrowdRisk | null
 }) {
-  const icon = busIconForRisk(crowdRisk)
+  const icon = busMarkerIcon()
 
   return (
     <MapContainer
