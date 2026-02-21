@@ -38,7 +38,6 @@ export const KNOWN_LOCATIONS = [
   "Medical Sciences Center",
   "Health Sciences Learning Center",
   "UW Hospital",
-  "Union South",
   "Nick Recreation",
   "Bakke Recreation",
   "Kohl Center",
