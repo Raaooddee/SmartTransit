@@ -64,16 +64,20 @@ function stopPinIcon(): L.DivIcon {
   })
 }
 
-/** Centers the map on user location when it's first set */
-function LocationCenterer({ userLocation }: { userLocation: [number, number] | null }) {
+/** Centers and zooms the map on user location when they click "My location" */
+function LocationCenterer({
+  userLocation,
+  centerTrigger,
+}: {
+  userLocation: [number, number] | null
+  centerTrigger: number
+}) {
   const map = useMap()
-  const hasCentered = useRef(false)
   useEffect(() => {
-    if (userLocation && !hasCentered.current) {
-      map.setView(userLocation, map.getZoom())
-      hasCentered.current = true
+    if (userLocation && centerTrigger > 0) {
+      map.setView(userLocation, 16)
     }
-  }, [userLocation, map])
+  }, [userLocation, centerTrigger, map])
   return null
 }
 
@@ -101,9 +105,11 @@ export function BusMapInner({
   const icon = busMarkerIcon()
   const stopIcon = stopPinIcon()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
+  const [centerTrigger, setCenterTrigger] = useState(0)
   const watchIdRef = useRef<number | null>(null)
 
   const handleMyLocation = () => {
+    setCenterTrigger((c) => c + 1)
     if (!navigator.geolocation) {
       alert("Location is not supported by your browser.")
       return
@@ -117,7 +123,11 @@ export function BusMapInner({
       if (err.code === 1) alert("Location permission denied.")
       else alert("Could not get your location: " + err.message)
     }
-    const options: PositionOptions = { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    const options: PositionOptions = {
+      enableHighAccuracy: false,
+      maximumAge: 60000,
+      timeout: 30000,
+    }
     navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
     const id = navigator.geolocation.watchPosition(onSuccess, onError, options)
     if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
@@ -144,7 +154,7 @@ export function BusMapInner({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <LocationCenterer userLocation={userLocation} />
+        <LocationCenterer userLocation={userLocation} centerTrigger={centerTrigger} />
         {userLocation && (
           <CircleMarker
             center={userLocation}
