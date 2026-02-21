@@ -1,3 +1,4 @@
+import os
 import requests
 import pandas as pd
 
@@ -7,7 +8,11 @@ import pandas as pd
 # Madison Metro's live API host
 HOST = "metromap.cityofmadison.com"
 BASE_URL = f"http://{HOST}/bustime/api/v3"
-API_KEY = "gxjpgqbvmBtpkGEqUXfWfWaHU"
+API_KEY = os.environ.get("MADISON_METRO_API_KEY")
+if not API_KEY:
+    print("Error: Set MADISON_METRO_API_KEY in your environment.")
+    print("Example: export MADISON_METRO_API_KEY='your-api-key'")
+    exit(1)
 ROUTES = "80"  # Route 80 is the UW-Madison campus loop
 
 # ==========================
