@@ -140,12 +140,51 @@ export default function Home() {
   const hasClassOnDay = (d: number) => schedule.some((c) => c.days.includes(d))
 
   if (showSplash) {
+    const word = "SmartTransit"
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#C5050C]">
-        <div className="splash-zoom-into-logo flex flex-col items-center justify-center gap-5 bg-[#C5050C]">
-          <SmartTransitLogo className="h-40 w-40 shrink-0 object-contain [mix-blend-mode:screen] sm:h-52 sm:w-52" />
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            SmartTransit
+      <div id="splash-screen" className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#C5050C]">
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes splash-letter-in {
+              from { opacity: 0; transform: translateY(-24px) scale(0.6); filter: blur(8px); }
+              to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+            }
+            @keyframes splash-glow-pulse {
+              0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2); }
+              50% { text-shadow: 0 0 28px rgba(255,255,255,0.6), 0 0 56px rgba(255,255,255,0.3); }
+            }
+            @keyframes splash-logo-fade {
+              from { opacity: 0; transform: scale(0.35); }
+              to { opacity: 1; transform: scale(1); }
+            }
+            #splash-screen .splash-letter {
+              display: inline-block;
+              opacity: 0;
+              animation: splash-letter-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+            #splash-screen .splash-word {
+              animation: splash-glow-pulse 2s ease-in-out 1.2s 1.2s infinite;
+            }
+            #splash-screen .splash-logo-reveal {
+              opacity: 0;
+              animation: splash-logo-fade 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
+            }
+          `,
+        }} />
+        <div className="flex flex-col items-center justify-center gap-8 bg-[#C5050C]">
+          <div className="splash-logo-reveal bg-[#C5050C]">
+            <SmartTransitLogo className="h-40 w-40 shrink-0 object-contain [mix-blend-mode:screen] sm:h-52 sm:w-52" />
+          </div>
+          <h1 className="splash-word flex text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+            {word.split("").map((char, i) => (
+              <span
+                key={i}
+                className="splash-letter"
+                style={{ animationDelay: `${i * 0.065}s` }}
+              >
+                {char}
+              </span>
+            ))}
           </h1>
         </div>
       </div>
