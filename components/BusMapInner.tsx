@@ -6,6 +6,8 @@ import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 import route80Stops from "@/data/route80_stops.json"
 import { Navigation } from "lucide-react"
+import type { LocationStatus } from "@/components/NearestStopCard"
+import { FALLBACK_LABEL } from "@/lib/constants"
 
 const MADISON_CENTER: [number, number] = [43.0731, -89.4012]
 
@@ -98,9 +100,15 @@ function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
 export function BusMapInner({
   vehicles,
   crowdRisk,
+  effectiveLocation: effectiveLocationProp,
+  locationStatus,
+  onRequestLocation,
 }: {
   vehicles: BusVehicle[]
   crowdRisk: CrowdRisk | null
+  effectiveLocation?: [number, number]
+  locationStatus?: LocationStatus
+  onRequestLocation?: () => void
 }) {
   const icon = busMarkerIcon()
   const stopIcon = stopPinIcon()
@@ -108,16 +116,22 @@ export function BusMapInner({
   const [centerTrigger, setCenterTrigger] = useState(0)
   const watchIdRef = useRef<number | null>(null)
 
+  const displayLocation = effectiveLocationProp ?? userLocation
+  const locationFromParent = effectiveLocationProp != null
+
   const handleMyLocation = () => {
+    if (onRequestLocation) {
+      setCenterTrigger((c) => c + 1)
+      onRequestLocation()
+      return
+    }
     setCenterTrigger((c) => c + 1)
     if (!navigator.geolocation) {
       alert("Location is not supported by your browser.")
       return
     }
     const onSuccess = (pos: GeolocationPosition) => {
-      const lat = pos.coords.latitude
-      const lon = pos.coords.longitude
-      setUserLocation([lat, lon])
+      setUserLocation([pos.coords.latitude, pos.coords.longitude])
     }
     const onError = (err: GeolocationPositionError) => {
       if (err.code === 1) alert("Location permission denied.")
@@ -154,10 +168,10 @@ export function BusMapInner({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <LocationCenterer userLocation={userLocation} centerTrigger={centerTrigger} />
-        {userLocation && (
+        <LocationCenterer userLocation={displayLocation} centerTrigger={centerTrigger} />
+        {displayLocation && (
           <CircleMarker
-            center={userLocation}
+            center={displayLocation}
             radius={12}
             pathOptions={{
               fillColor: "#4285F4",
@@ -167,7 +181,9 @@ export function BusMapInner({
             }}
           >
             <Tooltip direction="top" permanent={false}>
-              You are here
+              {locationFromParent && locationStatus === "fallback"
+                ? `Using default: ${FALLBACK_LABEL}`
+                : "You are here"}
             </Tooltip>
           </CircleMarker>
         )}

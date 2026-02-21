@@ -4,12 +4,15 @@ import dynamic from "next/dynamic"
 import { useState, useEffect } from "react"
 import { mockNextClass } from "@/lib/mock"
 import type { NextClassResponse, ScheduleClass } from "@/lib/types"
+import { FALLBACK_LOCATION } from "@/lib/constants"
+import type { LocationStatus } from "@/components/NearestStopCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Users, Ghost, RefreshCw, Plus } from "lucide-react"
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
 import { AboutOverlay } from "@/components/AboutOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
+import { NearestStopCard } from "@/components/NearestStopCard"
 
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
@@ -43,6 +46,44 @@ export default function Home() {
   const [aboutOpen, setAboutOpen] = useState(false)
   const [schedule, setSchedule] = useState<ScheduleClass[]>([])
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDay())
+  const [effectiveLocation, setEffectiveLocation] = useState<[number, number]>(FALLBACK_LOCATION)
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>("loading")
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (!navigator.geolocation) {
+      setEffectiveLocation(FALLBACK_LOCATION)
+      setLocationStatus("fallback")
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setEffectiveLocation([pos.coords.latitude, pos.coords.longitude])
+        setLocationStatus("granted")
+      },
+      (err) => {
+        setEffectiveLocation(FALLBACK_LOCATION)
+        setLocationStatus(err.code === 1 ? "denied" : "fallback")
+      },
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 }
+    )
+  }, [])
+
+  const handleRequestLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) return
+    setLocationStatus("loading")
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setEffectiveLocation([pos.coords.latitude, pos.coords.longitude])
+        setLocationStatus("granted")
+      },
+      (err) => {
+        setEffectiveLocation(FALLBACK_LOCATION)
+        setLocationStatus(err.code === 1 ? "denied" : "fallback")
+      },
+      { enableHighAccuracy: false, maximumAge: 0, timeout: 30000 }
+    )
+  }
 
   useEffect(() => {
     try {
@@ -129,6 +170,9 @@ export default function Home() {
               <Plus className="h-5 w-5" />
             </Button>
           </div>
+
+          {/* Nearest stop & bus (from current or default location) */}
+          <NearestStopCard effectiveLocation={effectiveLocation} locationStatus={locationStatus} />
 
           {/* 2) Next 3 class cards */}
           <div className="mb-4 flex flex-col gap-3">
@@ -256,7 +300,11 @@ export default function Home() {
         </aside>
 
         <main className="relative flex-1 border-l border-gray-200 bg-[#F7F7F7]">
-          <BusMap />
+          <BusMap
+            effectiveLocation={effectiveLocation}
+            locationStatus={locationStatus}
+            onRequestLocation={handleRequestLocation}
+          />
         </main>
       </div>
 
