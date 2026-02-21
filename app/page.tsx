@@ -165,27 +165,40 @@ export default function Home() {
             #splash-screen .splash-word {
               animation: splash-glow-pulse 2s ease-in-out 1.2s 1.2s infinite;
             }
+            @keyframes splash-tagline-in {
+              from { opacity: 0; transform: translateY(12px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
             #splash-screen .splash-logo-reveal {
               opacity: 0;
               animation: splash-logo-fade 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
+            }
+            #splash-screen .splash-tagline {
+              opacity: 0;
+              animation: splash-tagline-in 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) 0.85s forwards;
             }
           `,
         }} />
         <div className="flex flex-col items-center justify-center gap-8 bg-[#C5050C]">
           <div className="splash-logo-reveal bg-[#C5050C]">
-            <SmartTransitLogo className="h-40 w-40 shrink-0 object-contain [mix-blend-mode:screen] sm:h-52 sm:w-52" />
+            <SmartTransitLogo className="h-64 w-64 shrink-0 object-contain [mix-blend-mode:screen] sm:h-80 sm:w-80 md:h-96 md:w-96" />
           </div>
-          <h1 className="splash-word flex text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
-            {word.split("").map((char, i) => (
-              <span
-                key={i}
-                className="splash-letter"
-                style={{ animationDelay: `${i * 0.065}s` }}
-              >
-                {char}
-              </span>
-            ))}
-          </h1>
+          <div className="-mt-12 flex flex-col items-center gap-2 sm:-mt-16">
+            <h1 className="splash-word flex text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+              {word.split("").map((char, i) => (
+                <span
+                  key={i}
+                  className="splash-letter"
+                  style={{ animationDelay: `${i * 0.065}s` }}
+                >
+                  {char}
+                </span>
+              ))}
+            </h1>
+            <p className="splash-tagline text-base font-medium tracking-wide text-white/90 sm:text-lg">
+              Arrive on time, every time
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -206,9 +219,14 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-0">
           <SmartTransitLogo className="mt-1 h-44 w-44 shrink-0 object-contain [mix-blend-mode:screen]" />
-          <h1 className="-ml-12 text-3xl font-bold tracking-tight text-white">
-            SmartTransit
-          </h1>
+          <div className="-ml-12 flex flex-col">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              SmartTransit
+            </h1>
+            <p className="text-xs font-medium tracking-wide text-white/90">
+              Arrive on time, every time
+            </p>
+          </div>
         </div>
       </header>
 
