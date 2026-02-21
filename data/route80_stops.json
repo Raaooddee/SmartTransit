@@ -1,0 +1,284 @@
+[
+  {
+    "stop_id": "1246",
+    "stop_name": "Observatory at N Charter",
+    "stop_lat": "43.076131",
+    "stop_lon": "-89.40566"
+  },
+  {
+    "stop_id": "1262",
+    "stop_name": "Linden at Babcock",
+    "stop_lat": "43.075254",
+    "stop_lon": "-89.412549"
+  },
+  {
+    "stop_id": "1314",
+    "stop_name": "Linden at Henry",
+    "stop_lat": "43.075048",
+    "stop_lon": "-89.409857"
+  },
+  {
+    "stop_id": "1339",
+    "stop_name": "Observatory at Bascom",
+    "stop_lat": "43.075996",
+    "stop_lon": "-89.40366"
+  },
+  {
+    "stop_id": "1341",
+    "stop_name": "W Dayton at N Mills",
+    "stop_lat": "43.070893",
+    "stop_lon": "-89.403698"
+  },
+  {
+    "stop_id": "1651",
+    "stop_name": "N Charter at University",
+    "stop_lat": "43.073767",
+    "stop_lon": "-89.406352"
+  },
+  {
+    "stop_id": "1774",
+    "stop_name": "W Dayton at N Park",
+    "stop_lat": "43.070839",
+    "stop_lon": "-89.40002"
+  },
+  {
+    "stop_id": "1816",
+    "stop_name": "N Lake at University",
+    "stop_lat": "43.073076",
+    "stop_lon": "-89.397291"
+  },
+  {
+    "stop_id": "1",
+    "stop_name": "Langdon at N Park",
+    "stop_lat": "43.075933",
+    "stop_lon": "-89.400154"
+  },
+  {
+    "stop_id": "555",
+    "stop_name": "Linden at Henry",
+    "stop_lat": "43.075249",
+    "stop_lon": "-89.409997"
+  },
+  {
+    "stop_id": "595",
+    "stop_name": "Observatory at Walnut",
+    "stop_lat": "43.076436",
+    "stop_lon": "-89.424388"
+  },
+  {
+    "stop_id": "596",
+    "stop_name": "Lake Mendota at Lot R",
+    "stop_lat": "43.089239",
+    "stop_lon": "-89.43376"
+  },
+  {
+    "stop_id": "597",
+    "stop_name": "Eagle Heights at Lot E",
+    "stop_lat": "43.086293",
+    "stop_lon": "-89.435043"
+  },
+  {
+    "stop_id": "598",
+    "stop_name": "Marsh at Highland",
+    "stop_lat": "43.0788",
+    "stop_lon": "-89.429795"
+  },
+  {
+    "stop_id": "599",
+    "stop_name": "Eagle Heights at Lot F",
+    "stop_lat": "43.086248",
+    "stop_lon": "-89.436661"
+  },
+  {
+    "stop_id": "600",
+    "stop_name": "University Bay at Lot 60",
+    "stop_lat": "43.080259",
+    "stop_lon": "-89.428067"
+  },
+  {
+    "stop_id": "602",
+    "stop_name": "Lake Mendota at Eagle Heights",
+    "stop_lat": "43.086445",
+    "stop_lon": "-89.433772"
+  },
+  {
+    "stop_id": "603",
+    "stop_name": "Lake Mendota at Lot N",
+    "stop_lat": "43.089158",
+    "stop_lon": "-89.438057"
+  },
+  {
+    "stop_id": "604",
+    "stop_name": "Lake Mendota at University Bay",
+    "stop_lat": "43.084252",
+    "stop_lon": "-89.433487"
+  },
+  {
+    "stop_id": "605",
+    "stop_name": "Lake Mendota at University Bay",
+    "stop_lat": "43.084386",
+    "stop_lon": "-89.433784"
+  },
+  {
+    "stop_id": "606",
+    "stop_name": "University Bay at Lot 76",
+    "stop_lat": "43.080886",
+    "stop_lon": "-89.428351"
+  },
+  {
+    "stop_id": "607",
+    "stop_name": "Walnut at Observatory",
+    "stop_lat": "43.077045",
+    "stop_lon": "-89.424906"
+  },
+  {
+    "stop_id": "608",
+    "stop_name": "Eagle Heights at Lot M",
+    "stop_lat": "43.086668",
+    "stop_lon": "-89.441612"
+  },
+  {
+    "stop_id": "609",
+    "stop_name": "Lake Mendota at Lot P",
+    "stop_lat": "43.089784",
+    "stop_lon": "-89.437007"
+  },
+  {
+    "stop_id": "611",
+    "stop_name": "Lake Mendota at Lot Q",
+    "stop_lat": "43.090501",
+    "stop_lon": "-89.435587"
+  },
+  {
+    "stop_id": "612",
+    "stop_name": "Marsh at Lot 76",
+    "stop_lat": "43.079006",
+    "stop_lon": "-89.429203"
+  },
+  {
+    "stop_id": "614",
+    "stop_name": "Eagle Heights at Shelter",
+    "stop_lat": "43.086328",
+    "stop_lon": "-89.438587"
+  },
+  {
+    "stop_id": "615",
+    "stop_name": "Observatory at Walnut",
+    "stop_lat": "43.076759",
+    "stop_lon": "-89.42577"
+  },
+  {
+    "stop_id": "616",
+    "stop_name": "Observatory at Highland",
+    "stop_lat": "43.076973",
+    "stop_lon": "-89.428499"
+  },
+  {
+    "stop_id": "628",
+    "stop_name": "Highland at Observatory",
+    "stop_lat": "43.077349",
+    "stop_lon": "-89.428844"
+  },
+  {
+    "stop_id": "634",
+    "stop_name": "Observatory at Babcock",
+    "stop_lat": "43.076319",
+    "stop_lon": "-89.412882"
+  },
+  {
+    "stop_id": "655",
+    "stop_name": "Observatory at Elm",
+    "stop_lat": "43.076347",
+    "stop_lon": "-89.416104"
+  },
+  {
+    "stop_id": "679",
+    "stop_name": "Marsh at Lot 60",
+    "stop_lat": "43.078988",
+    "stop_lon": "-89.426659"
+  },
+  {
+    "stop_id": "692",
+    "stop_name": "Observatory at Colwood",
+    "stop_lat": "43.076382",
+    "stop_lon": "-89.420425"
+  },
+  {
+    "stop_id": "709",
+    "stop_name": "Highland at Marsh",
+    "stop_lat": "43.078388",
+    "stop_lon": "-89.430227"
+  },
+  {
+    "stop_id": "741",
+    "stop_name": "Observatory at Colwood",
+    "stop_lat": "43.076606",
+    "stop_lon": "-89.420808"
+  },
+  {
+    "stop_id": "851",
+    "stop_name": "University Bay at Picnic Point",
+    "stop_lat": "43.084225",
+    "stop_lon": "-89.429092"
+  },
+  {
+    "stop_id": "866",
+    "stop_name": "University Bay at Picnic Point",
+    "stop_lat": "43.084145",
+    "stop_lon": "-89.428759"
+  },
+  {
+    "stop_id": "877",
+    "stop_name": "Observatory at Elm",
+    "stop_lat": "43.076561",
+    "stop_lon": "-89.416289"
+  },
+  {
+    "stop_id": "878",
+    "stop_name": "Babcock at Linden",
+    "stop_lat": "43.07529",
+    "stop_lon": "-89.412894"
+  },
+  {
+    "stop_id": "882",
+    "stop_name": "Observatory at Babcock",
+    "stop_lat": "43.076534",
+    "stop_lon": "-89.413067"
+  },
+  {
+    "stop_id": "918",
+    "stop_name": "N Randall at Engineering",
+    "stop_lat": "43.072028",
+    "stop_lon": "-89.409136"
+  },
+  {
+    "stop_id": "973",
+    "stop_name": "N Lake at W Johnson",
+    "stop_lat": "43.071895",
+    "stop_lon": "-89.397341"
+  },
+  {
+    "stop_id": "1058",
+    "stop_name": "Linden at N Charter",
+    "stop_lat": "43.074985",
+    "stop_lon": "-89.406401"
+  },
+  {
+    "stop_id": "1185",
+    "stop_name": "Linden at N Charter",
+    "stop_lat": "43.0752",
+    "stop_lon": "-89.407339"
+  },
+  {
+    "stop_id": "1190",
+    "stop_name": "N Lake at Langdon",
+    "stop_lat": "43.075529",
+    "stop_lon": "-89.397191"
+  },
+  {
+    "stop_id": "1223",
+    "stop_name": "W Dayton at N Orchard",
+    "stop_lat": "43.070947",
+    "stop_lon": "-89.406982"
+  }
+]

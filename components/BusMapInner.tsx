@@ -76,6 +76,20 @@ export function BusMapInner({
               <strong>Bus {v.vid}</strong>
               <br />
               Route {v.rt}
+              {(v.next_stop_name != null && v.next_stop_name !== "") ? (
+                <>
+                  <br />
+                  Next stop: {v.next_stop_name}
+                  {v.next_stop_minutes != null && v.next_stop_minutes !== "" && (
+                    <> (in {v.next_stop_minutes} min)</>
+                  )}
+                </>
+              ) : (
+                <>
+                  <br />
+                  Next stop: —
+                </>
+              )}
               {v.spd != null && v.spd !== "" && (
                 <>
                   <br />

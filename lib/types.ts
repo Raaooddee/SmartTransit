@@ -29,6 +29,10 @@ export type BusVehicle = {
   spd?: string
   tmstmp?: string
   psgld?: string
+  /** Next stop (from getpredictions) */
+  next_stop_id?: string
+  next_stop_name?: string
+  next_stop_minutes?: string
 }
 
 /** A single class or event in the user's schedule */
