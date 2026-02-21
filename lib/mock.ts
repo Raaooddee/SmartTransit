@@ -1,4 +1,4 @@
-import { PredictionResponse } from "./types"
+import { PredictionResponse, NextClassResponse } from "./types"
 
 export const mockPrediction: PredictionResponse = {
   route: "80",
@@ -10,4 +10,15 @@ export const mockPrediction: PredictionResponse = {
   crowding: { level: "medium", prob_full: 0.35 },
   weather_impact: { delay_minutes_p50: 3, delay_minutes_p90: 9 },
   live: { vehicle_count: 2, next_eta_minutes: 8 }
+}
+
+export const mockNextClass: NextClassResponse = {
+  next_class: "CS — 9:30 @ Engineering Hall",
+  leave_in: "6–12 minutes (departure window)",
+  on_time_chance: 92,
+  reliability_score: 91,
+  route: "80",
+  crowd_risk: "high",
+  ghost_risk: "low",
+  live_updated: "12:41:18"
 }

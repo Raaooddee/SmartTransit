@@ -1,131 +1,127 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { mockPrediction } from "@/lib/mock";
-import type { PredictionResponse } from "@/lib/types";
+import dynamic from "next/dynamic"
+import { useState, useEffect } from "react"
+import { mockNextClass } from "@/lib/mock"
+import type { NextClassResponse } from "@/lib/types"
+import { Badge } from "@/components/ui/badge"
+import { MapPin, Clock, Route, Users, Ghost, RefreshCw } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
-function crowdBadge(level: PredictionResponse["crowding"]["level"]) {
-  if (level === "low") return <Badge>Low</Badge>;
-  if (level === "medium") return <Badge variant="secondary">Medium</Badge>;
-  return <Badge variant="destructive">High</Badge>;
+function riskBadge(risk: NextClassResponse["crowd_risk"] | NextClassResponse["ghost_risk"]) {
+  if (risk === "low") return <Badge className="bg-emerald-100 text-emerald-800">Low</Badge>
+  if (risk === "medium") return <Badge variant="secondary">Medium</Badge>
+  return <Badge variant="destructive">High</Badge>
 }
 
 export default function Home() {
-  const [stop, setStop] = useState("University & Lake");
-  const [arriveBy, setArriveBy] = useState("09:30");
-  const [data, setData] = useState<PredictionResponse>(mockPrediction);
+  const [data, setData] = useState<NextClassResponse>(mockNextClass)
+  const [liveTime, setLiveTime] = useState(data.live_updated)
 
-  function onSubmit() {
-    // Later: call backend. For now: update mock with your input.
-    setData({
-      ...mockPrediction,
-      stop_name: stop,
-      arrive_by: `2026-02-21T${arriveBy}:00-06:00`,
-    });
-  }
+  useEffect(() => {
+    fetch("/api/next-class")
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveTime(new Date().toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-50">
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-zinc-400">Route 80 • UW–Madison</p>
-          <h1 className="text-4xl font-extrabold tracking-tight">SmartTransit AI</h1>
-          <p className="max-w-2xl text-zinc-300">
-            Reliability-first bus planning: crowding prediction, ghost bus risk,
-            and weather-aware leave times.
-          </p>
+    <div className="flex h-screen flex-col bg-white">
+      {/* Header */}
+      <header className="flex h-14 items-center justify-between border-b border-zinc-200 px-6">
+        <h1 className="text-lg font-semibold text-zinc-900">SmartTransit</h1>
+        <div className="flex items-center gap-4 text-sm text-zinc-600">
+          <span>Route 80</span>
+          <span>UW–Madison</span>
         </div>
+      </header>
 
-        <Card className="mt-8 border-zinc-800 bg-zinc-900/50">
-          <CardHeader>
-            <CardTitle>Trip Planner</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <div className="grid gap-2">
-              <Label>Stop</Label>
-              <Input value={stop} onChange={(e) => setStop(e.target.value)} />
-            </div>
+      {/* Main split layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left panel - Next Class Card (Uber "Get a ride" style) */}
+        <aside className="flex w-full max-w-md flex-col border-r border-zinc-200 bg-white p-6">
+          <h2 className="mb-6 text-xl font-bold text-zinc-900">Next Class</h2>
 
-            <div className="grid gap-2">
-              <Label>Arrive by</Label>
-              <Input type="time" value={arriveBy} onChange={(e) => setArriveBy(e.target.value)} />
-            </div>
-
-            <div className="flex items-end">
-              <Button className="w-full" onClick={onSubmit}>
-                Get plan
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <Card className="border-zinc-800 bg-zinc-900/50">
-            <CardHeader>
-              <CardTitle>Leave by</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{new Date(data.recommended_departure).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-              <p className="mt-2 text-sm text-zinc-300">
-                To arrive by <span className="font-semibold">{arriveBy}</span> at{" "}
-                <span className="font-semibold">{data.stop_name}</span>
-              </p>
-              <Separator className="my-4 bg-zinc-800" />
-              <p className="text-sm text-zinc-400">
-                Live: {data.live.vehicle_count} buses • Next ETA {data.live.next_eta_minutes} min
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-zinc-800 bg-zinc-900/50">
-            <CardHeader>
-              <CardTitle>Reliability</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{data.reliability.score} / 100</div>
-              <p className="mt-2 text-sm text-zinc-300">{data.reliability.explanation}</p>
-              <Separator className="my-4 bg-zinc-800" />
-              <p className="text-sm text-zinc-400">
-                Weather delay (p50→p90): +{data.weather_impact.delay_minutes_p50} to +{data.weather_impact.delay_minutes_p90} min
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-zinc-800 bg-zinc-900/50">
-            <CardHeader>
-              <CardTitle>Crowding</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <div className="text-3xl font-bold capitalize">{data.crowding.level}</div>
-                {crowdBadge(data.crowding.level)}
+          <div className="flex flex-col gap-4">
+            {/* Next class */}
+            <div className="flex items-start gap-3 rounded-lg bg-zinc-50 p-4">
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-zinc-500" />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Next class</p>
+                <p className="mt-0.5 font-semibold text-zinc-900">{data.next_class}</p>
               </div>
-              <p className="mt-2 text-sm text-zinc-300">
-                {Math.round(data.crowding.prob_full * 100)}% chance the bus is full.
-              </p>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="border-zinc-800 bg-zinc-900/50">
-            <CardHeader>
-              <CardTitle>Ghost bus risk</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{Math.round(data.ghost_risk.prob * 100)}%</div>
-              <p className="mt-2 text-sm text-zinc-300">
-                {data.ghost_risk.flag ? "High risk: consider a backup option." : "Low risk for this window."}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Leave in */}
+            <div className="flex items-start gap-3 rounded-lg bg-zinc-50 p-4">
+              <Clock className="mt-0.5 h-5 w-5 shrink-0 text-zinc-500" />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Leave in</p>
+                <p className="mt-0.5 font-semibold text-zinc-900">{data.leave_in}</p>
+              </div>
+            </div>
+
+            {/* On-time chance */}
+            <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-4">
+              <span className="text-sm text-zinc-600">On-time chance</span>
+              <span className="text-lg font-bold text-zinc-900">{data.on_time_chance}%</span>
+            </div>
+
+            {/* Reliability Score */}
+            <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-4">
+              <span className="text-sm text-zinc-600">Reliability Score</span>
+              <span className="text-lg font-bold text-zinc-900">{data.reliability_score}/100</span>
+            </div>
+
+            {/* Route */}
+            <div className="flex items-center gap-3 rounded-lg bg-zinc-50 p-4">
+              <Route className="h-5 w-5 shrink-0 text-zinc-500" />
+              <div className="flex flex-1 items-center justify-between">
+                <span className="text-sm text-zinc-600">Route</span>
+                <span className="font-semibold text-zinc-900">{data.route}</span>
+              </div>
+            </div>
+
+            {/* Crowd Risk */}
+            <div className="flex items-center gap-3 rounded-lg bg-zinc-50 p-4">
+              <Users className="h-5 w-5 shrink-0 text-zinc-500" />
+              <div className="flex flex-1 items-center justify-between">
+                <span className="text-sm text-zinc-600">Crowd Risk</span>
+                {riskBadge(data.crowd_risk)}
+              </div>
+            </div>
+
+            {/* Ghost Risk */}
+            <div className="flex items-center gap-3 rounded-lg bg-zinc-50 p-4">
+              <Ghost className="h-5 w-5 shrink-0 text-zinc-500" />
+              <div className="flex flex-1 items-center justify-between">
+                <span className="text-sm text-zinc-600">Ghost Risk</span>
+                {riskBadge(data.ghost_risk)}
+              </div>
+            </div>
+
+            {/* Live updated */}
+            <div className="flex items-center gap-2 rounded-lg bg-zinc-100 py-3 px-4">
+              <RefreshCw className="h-4 w-4 text-zinc-500" />
+              <span className="text-sm text-zinc-600">Live updated:</span>
+              <span className="font-mono text-sm font-medium text-zinc-900">{liveTime}</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right panel - Map */}
+        <main className="relative flex-1">
+          <BusMap />
+        </main>
       </div>
-    </main>
-  );
+    </div>
+  )
 }
