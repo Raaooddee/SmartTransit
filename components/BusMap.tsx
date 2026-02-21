@@ -2,18 +2,33 @@
 
 import { useEffect, useState } from "react"
 import type { BusVehicle } from "@/lib/types"
-
-const MADISON_CENTER = { lat: 43.0731, lng: -89.4012 } as const
+import type { LocationStatus } from "@/components/NearestStopCard"
 
 type CrowdRisk = "low" | "medium" | "high"
 
 const POLL_MS = 60 * 1000 // every minute
 
-export function BusMap() {
+type BusMapProps = {
+  effectiveLocation?: [number, number]
+  locationStatus?: LocationStatus
+  onRequestLocation?: () => void
+}
+
+export function BusMap({
+  effectiveLocation,
+  locationStatus,
+  onRequestLocation,
+}: BusMapProps = {}) {
   const [vehicles, setVehicles] = useState<BusVehicle[]>([])
   const [crowdRisk, setCrowdRisk] = useState<CrowdRisk | null>(null)
   const [MapComponent, setMapComponent] = useState<
-    React.ComponentType<{ vehicles: BusVehicle[]; crowdRisk: CrowdRisk | null }> | null
+    React.ComponentType<{
+      vehicles: BusVehicle[]
+      crowdRisk: CrowdRisk | null
+      effectiveLocation?: [number, number]
+      locationStatus?: LocationStatus
+      onRequestLocation?: () => void
+    }> | null
   >(null)
 
   const fetchData = () => {
@@ -47,5 +62,13 @@ export function BusMap() {
     )
   }
 
-  return <MapComponent vehicles={vehicles} crowdRisk={crowdRisk} />
+  return (
+    <MapComponent
+      vehicles={vehicles}
+      crowdRisk={crowdRisk}
+      effectiveLocation={effectiveLocation}
+      locationStatus={locationStatus}
+      onRequestLocation={onRequestLocation}
+    />
+  )
 }

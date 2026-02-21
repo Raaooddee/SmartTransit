@@ -6,6 +6,8 @@ import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 import route80Stops from "@/data/route80_stops.json"
 import { Navigation } from "lucide-react"
+import type { LocationStatus } from "@/components/NearestStopCard"
+import { FALLBACK_LABEL } from "@/lib/constants"
 
 const MADISON_CENTER: [number, number] = [43.0731, -89.4012]
 
@@ -98,15 +100,24 @@ function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
 export function BusMapInner({
   vehicles,
   crowdRisk,
+  effectiveLocation: effectiveLocationProp,
+  locationStatus,
+  onRequestLocation,
 }: {
   vehicles: BusVehicle[]
   crowdRisk: CrowdRisk | null
+  effectiveLocation?: [number, number]
+  locationStatus?: LocationStatus
+  onRequestLocation?: () => void
 }) {
   const icon = busMarkerIcon()
   const stopIcon = stopPinIcon()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [centerTrigger, setCenterTrigger] = useState(0)
   const watchIdRef = useRef<number | null>(null)
+
+  const displayLocation = effectiveLocationProp ?? userLocation
+  const locationFromParent = effectiveLocationProp != null
 
   const geoOptions: PositionOptions = {
     enableHighAccuracy: false,
@@ -135,6 +146,11 @@ export function BusMapInner({
   }, [])
 
   const handleMyLocation = () => {
+    if (onRequestLocation) {
+      setCenterTrigger((c) => c + 1)
+      onRequestLocation()
+      return
+    }
     setCenterTrigger((c) => c + 1)
     if (!navigator.geolocation) {
       alert("Location is not supported by your browser.")
@@ -161,10 +177,10 @@ export function BusMapInner({
           maxZoom={19}
           maxNativeZoom={19}
         />
-        <LocationCenterer userLocation={userLocation} centerTrigger={centerTrigger} />
-        {userLocation && (
+        <LocationCenterer userLocation={displayLocation} centerTrigger={centerTrigger} />
+        {displayLocation && (
           <CircleMarker
-            center={userLocation}
+            center={displayLocation}
             radius={12}
             pathOptions={{
               fillColor: "#4285F4",
@@ -174,7 +190,9 @@ export function BusMapInner({
             }}
           >
             <Tooltip direction="top" permanent={false}>
-              You are here
+              {locationFromParent && locationStatus === "fallback"
+                ? `Using default: ${FALLBACK_LABEL}`
+                : "You are here"}
             </Tooltip>
           </CircleMarker>
         )}
