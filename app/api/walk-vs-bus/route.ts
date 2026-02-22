@@ -57,7 +57,12 @@ function busTravelMinutes(userStopId: string, destStopId: string): number | null
 function addMinutesToNow(minutes: number): string {
   const d = new Date()
   d.setMinutes(d.getMinutes() + minutes)
-  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+  return d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/Chicago",
+  })
 }
 
 export type WalkVsBusResponse = {
