@@ -76,6 +76,7 @@ export default function Home() {
   const [leaveFromInput, setLeaveFromInput] = useState("")
   const [leaveFromLoading, setLeaveFromLoading] = useState(false)
   const [leaveFromDropdownOpen, setLeaveFromDropdownOpen] = useState(false)
+  const [leaveFromPanelOpen, setLeaveFromPanelOpen] = useState(false)
   const leaveFromDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -170,6 +171,7 @@ export default function Home() {
     function handleClickOutside(e: MouseEvent) {
       if (leaveFromDropdownRef.current && !leaveFromDropdownRef.current.contains(e.target as Node)) {
         setLeaveFromDropdownOpen(false)
+        setLeaveFromPanelOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -440,107 +442,6 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Leave from another building */}
-          <div ref={leaveFromDropdownRef} className="relative mb-4 rounded-xl border border-gray-200 bg-white p-4">
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
-              Leave from another building?
-            </h2>
-            <p className="mb-3 text-xs text-gray-600">
-              Search campus buildings and apartments, or type any address and click Use.
-            </p>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="e.g. Bascom Hall, Morgridge, Dejope"
-                  value={leaveFromInput}
-                  onChange={(e) => {
-                    setLeaveFromInput(e.target.value)
-                    setLeaveFromDropdownOpen(true)
-                  }}
-                  onFocus={() => setLeaveFromDropdownOpen(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      const canonical = bestMatchOrInput(leaveFromInput.trim())
-                      const coords = getLocationCoordinates(canonical)
-                      if (coords) {
-                        setLeaveFromCoords(coords)
-                        setLeaveFromLabel(canonical)
-                        setLeaveFromInput(canonical)
-                        setLeaveFromDropdownOpen(false)
-                      } else {
-                        handleUseLeaveFrom()
-                      }
-                    }
-                  }}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C]"
-                />
-                {leaveFromDropdownOpen && (() => {
-                  const matchedNames = fuzzyMatchLocations(leaveFromInput, 30)
-                  return (
-                    <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                      {matchedNames.length === 0 ? (
-                        <li className="px-3 py-2 text-xs text-gray-500">No locations match. Type an address and click Use to geocode.</li>
-                      ) : (
-                        matchedNames.map((name) => {
-                          const coords = getLocationCoordinates(name)
-                          if (!coords) return null
-                          return (
-                            <li key={name}>
-                              <button
-                                type="button"
-                                className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C]"
-                                onClick={() => {
-                                  setLeaveFromCoords(coords)
-                                  setLeaveFromLabel(name)
-                                  setLeaveFromInput(name)
-                                  setLeaveFromDropdownOpen(false)
-                                }}
-                              >
-                                {name}
-                              </button>
-                            </li>
-                          )
-                        })
-                      )}
-                    </ul>
-                  )
-                })()}
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                className="shrink-0 bg-[#C5050C] text-white hover:bg-[#9B0000]"
-                onClick={handleUseLeaveFrom}
-                disabled={!leaveFromInput.trim() || leaveFromLoading}
-              >
-                {leaveFromLoading ? "…" : "Use"}
-              </Button>
-              {(leaveFromCoords || leaveFromLabel) && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => {
-                    setLeaveFromCoords(null)
-                    setLeaveFromLabel(null)
-                    setLeaveFromInput("")
-                    setLeaveFromDropdownOpen(false)
-                  }}
-                >
-                  Clear
-                </Button>
-              )}
-            </div>
-            {leaveFromLabel && (
-              <p className="mt-2 text-xs text-[#C5050C]">
-                Using <strong>{leaveFromLabel}</strong> as start for nearest stop, walk vs bus, and walking route.
-              </p>
-            )}
-          </div>
-
           {/* Nearest stop & bus (from current or leave-from location) */}
           <NearestStopCard
             effectiveLocation={effectiveStartLocation}
@@ -731,6 +632,120 @@ export default function Home() {
         </aside>
 
         <main className="relative flex-1 border-l border-gray-200 bg-[#F7F7F7]">
+          {/* Leave from another building — top right over map */}
+          <div ref={leaveFromDropdownRef} className="absolute right-16 bottom-4 z-[1001]">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLeaveFromPanelOpen((o) => !o)}
+              className="bg-white/95 shadow-md hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900"
+            >
+              <MapPin className="h-4 w-4 shrink-0 text-[#C5050C]" />
+              {leaveFromLabel ? leaveFromLabel : "Leave from another building?"}
+            </Button>
+            {leaveFromPanelOpen && (
+              <div className="absolute right-0 bottom-full z-[1011] mb-2 w-80 rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#C5050C]">Leave from another building?</p>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="e.g. Bascom Hall, Morgridge"
+                      value={leaveFromInput}
+                      onChange={(e) => {
+                        setLeaveFromInput(e.target.value)
+                        setLeaveFromDropdownOpen(true)
+                      }}
+                      onFocus={() => setLeaveFromDropdownOpen(true)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          const canonical = bestMatchOrInput(leaveFromInput.trim())
+                          const coords = getLocationCoordinates(canonical)
+                          if (coords) {
+                            setLeaveFromCoords(coords)
+                            setLeaveFromLabel(canonical)
+                            setLeaveFromInput(canonical)
+                            setLeaveFromDropdownOpen(false)
+                            setLeaveFromPanelOpen(false)
+                          } else {
+                            handleUseLeaveFrom()
+                          }
+                        }
+                      }}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C]"
+                    />
+                    {leaveFromDropdownOpen && (() => {
+                      const matchedNames = fuzzyMatchLocations(leaveFromInput, 30)
+                      return (
+                        <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          {matchedNames.length === 0 ? (
+                            <li className="px-3 py-2 text-xs text-gray-500">Type an address and click Use to geocode.</li>
+                          ) : (
+                            matchedNames.map((name) => {
+                              const coords = getLocationCoordinates(name)
+                              if (!coords) return null
+                              return (
+                                <li key={name}>
+                                  <button
+                                    type="button"
+                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C]"
+                                    onClick={() => {
+                                      setLeaveFromCoords(coords)
+                                      setLeaveFromLabel(name)
+                                      setLeaveFromInput(name)
+                                      setLeaveFromDropdownOpen(false)
+                                      setLeaveFromPanelOpen(false)
+                                    }}
+                                  >
+                                    {name}
+                                  </button>
+                                </li>
+                              )
+                            })
+                          )}
+                        </ul>
+                      )
+                    })()}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="shrink-0 bg-[#C5050C] text-white hover:bg-[#9B0000]"
+                    onClick={() => {
+                      handleUseLeaveFrom()
+                      setLeaveFromPanelOpen(false)
+                    }}
+                    disabled={!leaveFromInput.trim() || leaveFromLoading}
+                  >
+                    {leaveFromLoading ? "…" : "Use"}
+                  </Button>
+                  {(leaveFromCoords || leaveFromLabel) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => {
+                        setLeaveFromCoords(null)
+                        setLeaveFromLabel(null)
+                        setLeaveFromInput("")
+                        setLeaveFromDropdownOpen(false)
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {leaveFromLabel && (
+                  <p className="mt-2 text-xs text-[#C5050C]">
+                    Using <strong>{leaveFromLabel}</strong> for stop, walk vs bus, and route.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
           <BusMap
             effectiveLocation={effectiveLocation}
             locationStatus={locationStatus}
