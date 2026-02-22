@@ -28,11 +28,13 @@ export function WalkVsBusCard({ effectiveLocation, nextItem, destCoords }: Props
 
   useEffect(() => {
     if (!nextItem?.location?.trim()) {
-      setData(null)
+      queueMicrotask(() => setData(null))
       return
     }
-    setLoading(true)
-    setError(false)
+    queueMicrotask(() => {
+      setLoading(true)
+      setError(false)
+    })
     const [lat, lon] = effectiveLocation
     const params = new URLSearchParams({
       userLat: String(lat),
@@ -54,7 +56,7 @@ export function WalkVsBusCard({ effectiveLocation, nextItem, destCoords }: Props
         setError(true)
         setLoading(false)
       })
-  }, [effectiveLocation, nextItem?.location, nextItem?.name, destCoords?.lat, destCoords?.lon])
+  }, [effectiveLocation, nextItem?.location, nextItem?.name, destCoords])
 
   if (!nextItem?.location?.trim()) return null
 

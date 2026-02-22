@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Build data/downtown_madison_buildings.json from Overpass cache (or fetch live).
  * Downtown Madison bbox: south 43.07, west -89.392, north 43.079, east -89.38

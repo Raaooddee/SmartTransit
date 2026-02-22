@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Regenerate lib/locationCoordinates.ts from OpenStreetMap Overpass cache.
  * All named buildings (including apartments) in the UW Madison / downtown area.

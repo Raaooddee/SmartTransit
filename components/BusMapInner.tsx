@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { MapContainer, TileLayer, Marker, Tooltip, CircleMarker, Polyline, useMap } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
@@ -169,11 +169,10 @@ export function BusMapInner({
   const displayLocation = effectiveLocationProp ?? userLocation
   const locationFromParent = effectiveLocationProp != null
 
-  const geoOptions: PositionOptions = {
-    enableHighAccuracy: false,
-    maximumAge: 60000,
-    timeout: 30000,
-  }
+  const geoOptions = useMemo<PositionOptions>(
+    () => ({ enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 }),
+    []
+  )
 
   const onGeoSuccess = (pos: GeolocationPosition) => {
     setUserLocation([pos.coords.latitude, pos.coords.longitude])
@@ -193,7 +192,7 @@ export function BusMapInner({
     return () => {
       if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
     }
-  }, [])
+  }, [geoOptions])
 
   const handleMyLocation = () => {
     if (onRequestLocation) {
