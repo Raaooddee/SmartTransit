@@ -49,6 +49,15 @@ function formatTime(t: string) {
   return `${h - 12}:${String(m).padStart(2, "0")} PM`
 }
 
+function formatTimeFromDate(date: Date): string {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  if (hours === 0) return `12:${String(minutes).padStart(2, "0")} AM`
+  if (hours < 12) return `${hours}:${String(minutes).padStart(2, "0")} AM`
+  if (hours === 12) return `12:${String(minutes).padStart(2, "0")} PM`
+  return `${hours - 12}:${String(minutes).padStart(2, "0")} PM`
+}
+
 function timeToMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number)
   return (h ?? 0) * 60 + (m ?? 0)
@@ -275,10 +284,17 @@ export default function Home() {
     walkMinutesToDestination != null &&
     busTotalMinutes != null &&
     walkMinutesToDestination < busTotalMinutes
-  const leaveInForWalk =
+  const leaveInForWalk = 
     minutesUntilClassStart != null &&
     walkMinutesToDestination != null &&
     walkingIsFaster
+      ? Math.max(0, minutesUntilClassStart - walkMinutesToDestination)
+      : null
+  // Calculate when to start walking if no bus is available (no bus for 30+ minutes)
+  const leaveInForWalkNoBus =
+    leaveInNoBus30Min &&
+    minutesUntilClassStart != null &&
+    walkMinutesToDestination != null
       ? Math.max(0, minutesUntilClassStart - walkMinutesToDestination)
       : null
 
@@ -306,6 +322,30 @@ export default function Home() {
     const interval = setInterval(fetchLeaveIn, POLL_MS)
     return () => clearInterval(interval)
   }, [nearestStopForLeave?.stop_id])
+
+  // Calculate next bus arrival time at nearest stop
+  const [currentTime, setCurrentTime] = useState(() => new Date())
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000) // Update every second to keep time accurate
+    return () => clearInterval(interval)
+  }, [])
+
+  const nextBusArrivalTime = useMemo(() => {
+    if (!leaveInPredictions.length || leaveInNoBus30Min) return null
+    const firstPrediction = leaveInPredictions[0]
+    const minutesUntilArrival = firstPrediction?.prdctdn ? Number(firstPrediction.prdctdn) : null
+    
+    if (minutesUntilArrival == null || isNaN(minutesUntilArrival) || minutesUntilArrival > 30) {
+      return null
+    }
+    
+    // Calculate arrival time: current time + minutes until arrival
+    const arrivalDate = new Date(currentTime.getTime() + minutesUntilArrival * 60 * 1000)
+    return formatTimeFromDate(arrivalDate)
+  }, [leaveInPredictions, leaveInNoBus30Min, currentTime])
 
   const next3Classes = upcomingStarts.slice(0, 3)
   const nextDestination =
@@ -632,18 +672,20 @@ export default function Home() {
                     ? "—"
                     : leaveInForWalk != null && nextClassWithLocation
                       ? `Leave in ${leaveInForWalk} min for ${nextClassWithLocation.name}`
-                      : leaveInNoBus30Min && walkMinutesToStop != null
-                        ? `Start walking in ${walkMinutesToStop} min for class`
+                      : leaveInForWalkNoBus != null && nextClassWithLocation
+                        ? `Start walking in ${leaveInForWalkNoBus} min for ${nextClassWithLocation.name}`
                         : leaveInPredictions.length > 0 && leaveInPredictions[0].prdctdn != null && walkMinutesToStop != null && nearestStopForLeave
                           ? `Leave in ${walkMinutesToStop + Number(leaveInPredictions[0].prdctdn)} min for ${nearestStopForLeave.stop_name}`
                           : "—"}
                 </p>
               </div>
             )}
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-              <span className="text-sm text-gray-600">Updated departure time</span>
-              <span className="font-semibold text-[#C5050C]">{data.updated_departure_time ?? "—"}</span>
-            </div>
+            {nextBusArrivalTime && (
+              <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
+                <span className="text-sm text-gray-600">Updated departure time</span>
+                <span className="font-semibold text-[#C5050C]">{nextBusArrivalTime}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
               <Users className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Crowd risk</span>
