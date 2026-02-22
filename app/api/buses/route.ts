@@ -87,8 +87,11 @@ export async function GET() {
       })
     }
 
-    return NextResponse.json({ vehicles })
+    return NextResponse.json({ 
+      vehicles,
+      count: vehicles.length 
+    })
   } catch {
-    return NextResponse.json({ vehicles: [] })
+    return NextResponse.json({ vehicles: [], count: 0 })
   }
 }

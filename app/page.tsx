@@ -8,7 +8,7 @@ import { FALLBACK_LOCATION } from "@/lib/constants"
 import type { LocationStatus } from "@/components/NearestStopCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Users, Ghost, RefreshCw, Plus, ChevronDown, ChevronUp, Footprints } from "lucide-react"
+import { MapPin, Users, Ghost, RefreshCw, Plus, ChevronDown, ChevronUp, Footprints, Bus } from "lucide-react"
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
 import { AboutOverlay } from "@/components/AboutOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
@@ -86,6 +86,7 @@ export default function Home() {
   const [leaveFromLoading, setLeaveFromLoading] = useState(false)
   const [leaveFromDropdownOpen, setLeaveFromDropdownOpen] = useState(false)
   const [leaveFromPanelOpen, setLeaveFromPanelOpen] = useState(false)
+  const [activeBusCount, setActiveBusCount] = useState<number | null>(null)
   const leaveFromDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -162,6 +163,20 @@ export default function Home() {
       .then((r) => r.json())
       .then(setData)
       .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const fetchBusCount = () => {
+      fetch("/api/buses")
+        .then((r) => r.json())
+        .then((d) => {
+          setActiveBusCount(d.count ?? 0)
+        })
+        .catch(() => setActiveBusCount(null))
+    }
+    fetchBusCount()
+    const interval = setInterval(fetchBusCount, POLL_MS)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -542,6 +557,15 @@ export default function Home() {
                 {ghostRiskBadge(data.ghost_risk)}
               </div>
             </div>
+            {activeBusCount !== null && (
+              <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <Bus className="h-3.5 w-3.5 text-[#C5050C]" />
+                  <span className="text-xs text-gray-600">Active Route 80 buses</span>
+                </div>
+                <span className="text-sm font-semibold text-[#C5050C]">{activeBusCount}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2">
               <RefreshCw className="h-3.5 w-3.5 text-[#C5050C]" />
               <span className="text-xs text-gray-500">Last updated:</span>
