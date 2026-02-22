@@ -149,7 +149,10 @@ export default function Home() {
     .filter((c) => c.days.includes(today))
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
   const upcomingToday = todayClasses.filter((c) => timeToMinutes(c.endTime) > currentMinutes)
-  const nextClassWithLocation = upcomingToday.find((c) => c.location?.trim()) ?? null
+  const upcomingStarts = todayClasses
+    .filter((c) => timeToMinutes(c.startTime) > currentMinutes)
+    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
+  const nextClassWithLocation = upcomingStarts.find((c) => c.location?.trim()) ?? null
   const nextDestLocation = nextClassWithLocation?.location?.trim() ?? null
 
   useEffect(() => {
@@ -210,6 +213,32 @@ export default function Home() {
     return walkMinutes(effectiveLocation, [lat, lon])
   }, [effectiveLocation[0], effectiveLocation[1], nearestStopForLeave])
 
+  const walkMinutesToDestination = useMemo(() => {
+    if (!destinationCoords) return null
+    return walkMinutes(effectiveLocation, [destinationCoords.lat, destinationCoords.lon])
+  }, [effectiveLocation[0], effectiveLocation[1], destinationCoords?.lat, destinationCoords?.lon])
+
+  const minutesUntilClassStart = nextClassWithLocation
+    ? timeToMinutes(nextClassWithLocation.startTime) - currentMinutes
+    : null
+
+  const busTotalMinutes =
+    walkMinutesToStop != null &&
+    leaveInPredictions.length > 0 &&
+    leaveInPredictions[0].prdctdn != null
+      ? walkMinutesToStop + Number(leaveInPredictions[0].prdctdn) + 2
+      : null
+  const walkingIsFaster =
+    walkMinutesToDestination != null &&
+    busTotalMinutes != null &&
+    walkMinutesToDestination < busTotalMinutes
+  const leaveInForWalk =
+    minutesUntilClassStart != null &&
+    walkMinutesToDestination != null &&
+    walkingIsFaster
+      ? Math.max(0, minutesUntilClassStart - walkMinutesToDestination)
+      : null
+
   useEffect(() => {
     if (!nearestStopForLeave?.stop_id) {
       setLeaveInPredictions([])
@@ -235,7 +264,7 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [nearestStopForLeave?.stop_id])
 
-  const next3Classes = upcomingToday.slice(0, 3)
+  const next3Classes = upcomingStarts.slice(0, 3)
   const nextDestination =
     destinationCoords && nextClassWithLocation
       ? {
@@ -446,17 +475,19 @@ export default function Home() {
 
           {/* 3) Stats */}
           <div className="mb-6 flex flex-col gap-3">
-            {upcomingToday.length > 0 && (
+            {upcomingStarts.length > 0 && (
               <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Leave in</p>
                 <p className="mt-1 font-semibold text-[#C5050C]">
                   {leaveInError
                     ? "—"
-                    : leaveInNoBus30Min && walkMinutesToStop != null
-                      ? `Start walking in ${walkMinutesToStop} min for class`
-                      : leaveInPredictions.length > 0 && leaveInPredictions[0].prdctdn != null && walkMinutesToStop != null && nearestStopForLeave
-                        ? `Leave in ${walkMinutesToStop + Number(leaveInPredictions[0].prdctdn)} min for ${nearestStopForLeave.stop_name}`
-                        : "—"}
+                    : leaveInForWalk != null && nextClassWithLocation
+                      ? `Leave in ${leaveInForWalk} min for ${nextClassWithLocation.name}`
+                      : leaveInNoBus30Min && walkMinutesToStop != null
+                        ? `Start walking in ${walkMinutesToStop} min for class`
+                        : leaveInPredictions.length > 0 && leaveInPredictions[0].prdctdn != null && walkMinutesToStop != null && nearestStopForLeave
+                          ? `Leave in ${walkMinutesToStop + Number(leaveInPredictions[0].prdctdn)} min for ${nearestStopForLeave.stop_name}`
+                          : "—"}
                 </p>
               </div>
             )}

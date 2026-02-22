@@ -143,6 +143,15 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return R * c
 }
 
+/**
+ * When the bus is between two stops, the geographically nearest stop is often the
+ * *next* stop (e.g. Eagle Heights at Lot M), so we over-estimate progress and the
+ * ETA keeps increasing until the bus actually reaches that stop. To fix: among stops
+ * that are within a small factor of the minimum distance, pick the one with the
+ * *smallest index* (earliest in the sequence), i.e. the last stop we've passed.
+ */
+const SNAP_DISTANCE_FACTOR = 1.4
+
 export function snapVehicleToVariantSequence(
   variant: Route80Variant,
   stopsWithCoords: { stop_id: string; stop_lat: string; stop_lon: string }[],
@@ -156,20 +165,23 @@ export function snapVehicleToVariantSequence(
       { lat: parseFloat(s.stop_lat), lon: parseFloat(s.stop_lon) },
     ])
   )
-  let bestIdx = -1
-  let bestDist = Infinity
+  let minDist = Infinity
+  const candidates: { idx: number; dist: number }[] = []
   for (let i = 0; i < seq.length; i++) {
     const stopId = getStopId(seq[i])
     const c = coordsByStop.get(stopId)
     if (!c || isNaN(c.lat) || isNaN(c.lon)) continue
     const d = haversineKm(lat, lon, c.lat, c.lon)
-    if (d < bestDist) {
-      bestDist = d
-      bestIdx = i
-    }
+    if (d < minDist) minDist = d
+    candidates.push({ idx: i, dist: d })
   }
-  if (bestIdx < 0) return null
-  return getStopId(seq[bestIdx])
+  if (minDist === Infinity || candidates.length === 0) return null
+  const threshold = minDist * SNAP_DISTANCE_FACTOR
+  const closeEnough = candidates.filter((c) => c.dist <= threshold)
+  const best = closeEnough.length > 0
+    ? closeEnough.reduce((a, b) => (a.idx <= b.idx ? a : b))
+    : candidates.reduce((a, b) => (a.dist <= b.dist ? a : b))
+  return getStopId(seq[best.idx])
 }
 
 /**
