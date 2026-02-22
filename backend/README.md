@@ -6,6 +6,16 @@ The bus fullness/crowding model runs in Python. The Next.js app can use it by st
 
 ### Run the crowding API
 
+**Option 1 – Run everything together (recommended)**  
+From the project root, after `pip install -r backend/requirements.txt`:
+
+```bash
+npm run dev
+```
+
+This starts both the Next.js app (port 3000) and the Python crowding service (port 8000). The app is configured to use `http://localhost:8000` when running this way.
+
+**Option 2 – Run the backend only**  
 From the project root:
 
 ```bash
@@ -14,13 +24,13 @@ pip install -r requirements.txt
 python3 -m uvicorn main:app --reload --port 8000
 ```
 
-Then in the Next.js app (e.g. in `.env.local`):
+Then run the Next.js app separately (`npm run dev:next`) and set in `.env.local`:
 
 ```
 CROWDING_SERVICE_URL=http://localhost:8000
 ```
 
-If `CROWDING_SERVICE_URL` is not set, the app falls back to the in-app TypeScript crowding implementation.
+If `CROWDING_SERVICE_URL` is not set, the app falls back to the in-app default (crowd risk "medium").
 
 ### Endpoints
 
