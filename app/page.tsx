@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { mockNextClass } from "@/lib/mock"
 import type { NextClassResponse, ScheduleClass } from "@/lib/types"
 import { FALLBACK_LOCATION } from "@/lib/constants"
@@ -12,11 +12,13 @@ import { MapPin, Users, Ghost, RefreshCw, Plus, ChevronDown, ChevronUp, Footprin
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
 import { AboutOverlay } from "@/components/AboutOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
-import { NearestStopCard } from "@/components/NearestStopCard"
+import { NearestStopCard, getNearestStop } from "@/components/NearestStopCard"
+import { walkMinutes } from "@/lib/walk-vs-bus"
 import { WalkVsBusCard } from "@/components/WalkVsBusCard"
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
 const SCHEDULE_STORAGE_KEY = "smarttransit-schedule"
+const POLL_MS = 60 * 1000
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const DAY_SHORT = ["S", "M", "T", "W", "T", "F", "S"]
 
@@ -53,6 +55,9 @@ export default function Home() {
   const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [showWalkingRoute, setShowWalkingRoute] = useState(false)
   const [walkingRoutePath, setWalkingRoutePath] = useState<[number, number][] | null>(null)
+  const [leaveInPredictions, setLeaveInPredictions] = useState<{ prdctdn?: string }[]>([])
+  const [leaveInNoBus30Min, setLeaveInNoBus30Min] = useState(false)
+  const [leaveInError, setLeaveInError] = useState(false)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -181,6 +186,43 @@ export default function Home() {
   const handleImportSchedule = (classes: ScheduleClass[]) => {
     setSchedule(classes)
   }
+
+  const nearestStopForLeave = useMemo(
+    () => getNearestStop(effectiveLocation[0], effectiveLocation[1]),
+    [effectiveLocation[0], effectiveLocation[1]]
+  )
+  const walkMinutesToStop = useMemo(() => {
+    if (!nearestStopForLeave) return null
+    const lat = parseFloat(nearestStopForLeave.stop_lat)
+    const lon = parseFloat(nearestStopForLeave.stop_lon)
+    if (isNaN(lat) || isNaN(lon)) return null
+    return walkMinutes(effectiveLocation, [lat, lon])
+  }, [effectiveLocation[0], effectiveLocation[1], nearestStopForLeave])
+
+  useEffect(() => {
+    if (!nearestStopForLeave?.stop_id) {
+      setLeaveInPredictions([])
+      setLeaveInNoBus30Min(false)
+      return
+    }
+    const fetchLeaveIn = () => {
+      fetch(`/api/predictions?stpid=${encodeURIComponent(nearestStopForLeave.stop_id)}&rt=80`)
+        .then((r) => r.json())
+        .then((d) => {
+          setLeaveInPredictions(Array.isArray(d.predictions) ? d.predictions : [])
+          setLeaveInNoBus30Min(Boolean(d.no_bus_for_30_min))
+          setLeaveInError(false)
+        })
+        .catch(() => {
+          setLeaveInPredictions([])
+          setLeaveInNoBus30Min(false)
+          setLeaveInError(true)
+        })
+    }
+    fetchLeaveIn()
+    const interval = setInterval(fetchLeaveIn, POLL_MS)
+    return () => clearInterval(interval)
+  }, [nearestStopForLeave?.stop_id])
 
   const next3Classes = upcomingToday.slice(0, 3)
   const nextDestination =
@@ -393,10 +435,20 @@ export default function Home() {
 
           {/* 3) Stats */}
           <div className="mb-6 flex flex-col gap-3">
-            <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Leave in</p>
-              <p className="mt-1 font-semibold text-[#C5050C]">{data.leave_in}</p>
-            </div>
+            {upcomingToday.length > 0 && (
+              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Leave in</p>
+                <p className="mt-1 font-semibold text-[#C5050C]">
+                  {leaveInError
+                    ? "—"
+                    : leaveInNoBus30Min && walkMinutesToStop != null
+                      ? `Start walking in ${walkMinutesToStop} min for class`
+                      : leaveInPredictions.length > 0 && leaveInPredictions[0].prdctdn != null && walkMinutesToStop != null && nearestStopForLeave
+                        ? `Leave in ${walkMinutesToStop + Number(leaveInPredictions[0].prdctdn)} min for ${nearestStopForLeave.stop_name}`
+                        : "—"}
+                </p>
+              </div>
+            )}
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
               <span className="text-sm text-gray-600">Updated departure time</span>
               <span className="font-semibold text-[#C5050C]">{data.updated_departure_time ?? "—"}</span>
