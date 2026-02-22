@@ -329,12 +329,6 @@ export function BusMapInner({
                   Speed: {v.spd} mph
                 </>
               )}
-              {v.psgld != null && v.psgld !== "" && (
-                <>
-                  <br />
-                  Passengers (psgld): {v.psgld}
-                </>
-              )}
               {(() => {
                 const stopKey = (v.next_stop_name ?? v.next_stop_id ?? "").trim()
                 const risk = stopKey ? crowdRiskByStop[stopKey] : null
