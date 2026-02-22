@@ -354,7 +354,7 @@ export function BusMapInner({
       <button
         type="button"
         onClick={handleMyLocation}
-        className="absolute bottom-4 right-4 z-[1000] flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#C5050C] focus:ring-offset-2"
+        className="absolute bottom-4 right-4 z-[1000] flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#C5050C] focus:ring-offset-2 cursor-pointer"
         aria-label="Show my location"
       >
         <Navigation className="h-5 w-5 text-[#C5050C]" />

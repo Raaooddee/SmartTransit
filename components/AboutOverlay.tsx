@@ -21,7 +21,7 @@ export function AboutOverlay({ open, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" aria-modal="true" role="dialog">
       <div
-        className="absolute inset-0 bg-[#333333]/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#333333]/70 backdrop-blur-sm cursor-pointer"
         onClick={onClose}
         aria-hidden
       />
@@ -35,7 +35,7 @@ export function AboutOverlay({ open, onClose }: Props) {
             size="icon"
             onClick={onClose}
             aria-label="Close"
-            className="text-gray-500 hover:bg-[#F7F7F7] hover:text-[#333333]"
+            className="text-gray-500 hover:bg-[#F7F7F7] hover:text-[#333333] cursor-pointer"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -100,7 +100,7 @@ export function AboutOverlay({ open, onClose }: Props) {
                     href={member.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-[#0A66C2] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/40 focus:ring-offset-1 rounded"
+                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-[#0A66C2] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/40 focus:ring-offset-1 rounded cursor-pointer"
                   >
                     LinkedIn
                   </a>

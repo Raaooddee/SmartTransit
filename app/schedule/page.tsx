@@ -124,7 +124,7 @@ export default function SchedulePage() {
         <button
           type="button"
           onClick={goBackToMap}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-white/95 hover:bg-white/20 font-medium transition-colors"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-white/95 hover:bg-white/20 font-medium transition-colors cursor-pointer"
         >
           <ArrowLeft className="h-5 w-5 shrink-0" />
           Back
@@ -240,11 +240,11 @@ export default function SchedulePage() {
               Edit classes & events
             </h2>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={addClass} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={addClass} className="gap-1.5 cursor-pointer">
                 <Plus className="h-4 w-4" />
                 Class
               </Button>
-              <Button variant="outline" size="sm" onClick={addEvent} className="gap-1.5 border-amber-300 text-amber-800 hover:bg-amber-50">
+              <Button variant="outline" size="sm" onClick={addEvent} className="gap-1.5 border-amber-300 text-amber-800 hover:bg-amber-50 cursor-pointer">
                 <Plus className="h-4 w-4" />
                 Event
               </Button>
@@ -273,7 +273,7 @@ export default function SchedulePage() {
                       <Button
                         type="button"
                         size="sm"
-                        className="bg-[#C5050C] text-white hover:bg-[#9B0000] gap-1.5"
+                        className="bg-[#C5050C] text-white hover:bg-[#9B0000] gap-1.5 cursor-pointer"
                         onClick={() => handleSaveItem(item.id)}
                       >
                         {savedId === item.id ? (
@@ -289,7 +289,7 @@ export default function SchedulePage() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="text-[#9B0000] hover:bg-red-50 hover:text-[#C5050C] gap-1"
+                        className="text-[#9B0000] hover:bg-red-50 hover:text-[#C5050C] gap-1 cursor-pointer"
                         onClick={() => removeItem(item.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -342,7 +342,7 @@ export default function SchedulePage() {
                             key={i}
                             type="button"
                             onClick={() => toggleDay(item.id, i)}
-                            className={`px-2.5 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-2.5 py-1 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                               item.days.includes(i)
                                 ? "bg-[#C5050C] text-white border border-[#C5050C]"
                                 : "bg-white text-gray-600 border border-gray-300 hover:bg-[#F7F7F7]"
@@ -370,7 +370,7 @@ export default function SchedulePage() {
           <Button
             type="button"
             onClick={goBackToMap}
-            className="bg-[#C5050C] text-white hover:bg-[#9B0000] gap-2"
+            className="bg-[#C5050C] text-white hover:bg-[#9B0000] gap-2 cursor-pointer"
           >
             <MapPin className="h-4 w-4 shrink-0" />
             Back to map

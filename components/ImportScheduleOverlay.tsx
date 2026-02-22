@@ -82,7 +82,7 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" aria-modal="true" role="dialog">
       <div
-        className="absolute inset-0 bg-[#333333]/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#333333]/70 backdrop-blur-sm cursor-pointer"
         onClick={onClose}
         aria-hidden
       />
@@ -96,7 +96,7 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
             size="icon"
             onClick={onClose}
             aria-label="Close"
-            className="text-gray-500 hover:bg-[#F7F7F7] hover:text-[#333333]"
+            className="text-gray-500 hover:bg-[#F7F7F7] hover:text-[#333333] cursor-pointer"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -121,7 +121,7 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
                     type="button"
                     variant="ghost"
                     size="xs"
-                    className="text-[#9B0000] hover:bg-red-50 hover:text-[#C5050C]"
+                    className="text-[#9B0000] hover:bg-red-50 hover:text-[#C5050C] cursor-pointer"
                     onClick={() => removeClass(cls.id)}
                   >
                     Remove
@@ -173,7 +173,7 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
                         key={i}
                         type="button"
                         onClick={() => toggleDay(cls.id, i)}
-                        className={`px-2.5 py-1 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-2.5 py-1 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                           cls.days.includes(i)
                             ? "bg-[#C5050C] text-white border border-[#C5050C]"
                             : "bg-white text-gray-600 border border-gray-300 hover:bg-[#F7F7F7]"
@@ -194,21 +194,21 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
             <Button
               variant="outline"
               onClick={addClass}
-              className="flex-1 border-gray-300 text-[#333333] hover:bg-[#F7F7F7]"
+              className="flex-1 border-gray-300 text-[#333333] hover:bg-[#F7F7F7] cursor-pointer"
             >
               Add class
             </Button>
             <Button
               variant="outline"
               onClick={addEvent}
-              className="flex-1 border-amber-300 text-amber-800 hover:bg-amber-50"
+              className="flex-1 border-amber-300 text-amber-800 hover:bg-amber-50 cursor-pointer"
             >
               Add event
             </Button>
           </div>
           <Button
             onClick={handleImport}
-            className="w-full bg-[#C5050C] text-white hover:bg-[#9B0000]"
+            className="w-full bg-[#C5050C] text-white hover:bg-[#9B0000] cursor-pointer"
           >
             Complete schedule
           </Button>

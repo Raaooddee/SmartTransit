@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n next,backend \"npm run dev:next\" \"npm run backend\"",
-    "dev:next": "CROWDING_SERVICE_URL=http://localhost:8000 next dev -p 3000",
+    "dev:next": "next dev -p 3000",
     "backend": "cd backend && python3 -m uvicorn main:app --reload --port 8000",
     "build": "next build",
     "start": "next start",
