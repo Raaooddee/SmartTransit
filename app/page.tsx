@@ -16,10 +16,24 @@ import { NearestStopCard, getNearestStop } from "@/components/NearestStopCard"
 import { walkMinutes } from "@/lib/walk-vs-bus"
 import { WalkVsBusCard } from "@/components/WalkVsBusCard"
 import { getLocationCoordinates, fuzzyMatchLocations, bestMatchOrInput } from "@/lib/locations"
+import Link from "next/link"
+import { SCHEDULE_STORAGE_KEY } from "@/lib/constants"
 
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
-const SCHEDULE_STORAGE_KEY = "smarttransit-schedule"
+/** Load schedule from localStorage (client-only; returns [] on SSR so main page never overwrites saved data with []) */
+function loadScheduleFromStorage(): ScheduleClass[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(SCHEDULE_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as ScheduleClass[]
+    return Array.isArray(parsed) ? parsed.map((c) => ({ ...c, type: (c.type ?? "class") as "class" | "event" })) : []
+  } catch {
+    return []
+  }
+}
+
 const POLL_MS = 60 * 1000
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const DAY_SHORT = ["S", "M", "T", "W", "T", "F", "S"]
@@ -69,7 +83,9 @@ export default function Home() {
   const [liveTime, setLiveTime] = useState(data.live_updated)
   const [overlayOpen, setOverlayOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
-  const [schedule, setSchedule] = useState<ScheduleClass[]>([])
+  const [schedule, setSchedule] = useState<ScheduleClass[]>(() =>
+  typeof window === "undefined" ? [] : loadScheduleFromStorage()
+)
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDay())
   const [effectiveLocation, setEffectiveLocation] = useState<[number, number]>(FALLBACK_LOCATION)
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("loading")
@@ -144,20 +160,22 @@ export default function Home() {
   }
 
   useEffect(() => {
+    if (typeof window === "undefined") return
+    const fromSchedule = sessionStorage.getItem("smarttransit-from-schedule")
+    if (fromSchedule) {
+      sessionStorage.removeItem("smarttransit-from-schedule")
+      setShowSplash(false)
+      setSchedule(loadScheduleFromStorage())
+      return
+    }
     const t = setTimeout(() => setShowSplash(false), 2500)
     return () => clearTimeout(t)
   }, [])
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SCHEDULE_STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw) as ScheduleClass[]
-        setSchedule(parsed.map((c) => ({ ...c, type: c.type ?? "class" })))
-      }
-    } catch {
-      // ignore
-    }
+    if (typeof window === "undefined") return
+    if (sessionStorage.getItem("smarttransit-from-schedule")) return
+    setSchedule(loadScheduleFromStorage())
   }, [])
 
   useEffect(() => {
@@ -192,8 +210,13 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
+  const isFirstMountRef = useRef(true)
   useEffect(() => {
     if (typeof window === "undefined") return
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false
+      return
+    }
     localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(schedule))
   }, [schedule])
 
@@ -480,14 +503,15 @@ export default function Home() {
           <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/95 backdrop-blur-sm">
             Route 80
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setOverlayOpen(true)}
-            className="text-white hover:bg-white/20 font-medium"
-          >
-            Schedule
-          </Button>
+          <Link href="/schedule">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20 font-medium"
+            >
+              Schedule
+            </Button>
+          </Link>
           <Button
             variant="ghost"
             size="sm"
