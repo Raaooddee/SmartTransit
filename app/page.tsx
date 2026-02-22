@@ -110,8 +110,10 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === "undefined") return
     if (!navigator.geolocation) {
-      setEffectiveLocation(FALLBACK_LOCATION)
-      setLocationStatus("fallback")
+      queueMicrotask(() => {
+        setEffectiveLocation(FALLBACK_LOCATION)
+        setLocationStatus("fallback")
+      })
       return
     }
     navigator.geolocation.getCurrentPosition(
@@ -175,7 +177,7 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === "undefined") return
     if (sessionStorage.getItem("smarttransit-from-schedule")) return
-    setSchedule(loadScheduleFromStorage())
+    queueMicrotask(() => setSchedule(loadScheduleFromStorage()))
   }, [])
 
   useEffect(() => {
@@ -237,25 +239,25 @@ export default function Home() {
   const todayClasses = schedule
     .filter((c) => c.days.includes(today))
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
-  const upcomingToday = todayClasses.filter((c) => timeToMinutes(c.endTime) > currentMinutes)
   const upcomingStarts = todayClasses
     .filter((c) => timeToMinutes(c.startTime) > currentMinutes)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
   const nextClassWithLocation = upcomingStarts.find((c) => c.location?.trim()) ?? null
   const nextDestLocation = nextClassWithLocation?.location?.trim() ?? null
 
-  const effectiveStartLocation: [number, number] = leaveFromCoords
-    ? [leaveFromCoords.lat, leaveFromCoords.lon]
-    : effectiveLocation
+  const effectiveStartLocation = useMemo<[number, number]>(
+    () => (leaveFromCoords ? [leaveFromCoords.lat, leaveFromCoords.lon] : effectiveLocation),
+    [leaveFromCoords, effectiveLocation]
+  )
 
   useEffect(() => {
     if (!nextDestLocation) {
-      setDestinationCoords(null)
+      queueMicrotask(() => setDestinationCoords(null))
       return
     }
     const knownCoords = getLocationCoordinates(bestMatchOrInput(nextDestLocation))
     if (knownCoords) {
-      setDestinationCoords(knownCoords)
+      queueMicrotask(() => setDestinationCoords(knownCoords))
       return
     }
     fetch(`/api/geocode?q=${encodeURIComponent(nextDestLocation)}`)
@@ -272,7 +274,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!showWalkingRoute || !destinationCoords) {
-      setWalkingRoutePath(null)
+      queueMicrotask(() => setWalkingRoutePath(null))
       return
     }
     const [fromLat, fromLon] = effectiveStartLocation
@@ -293,7 +295,7 @@ export default function Home() {
         }
       })
       .catch(() => setWalkingRoutePath(null))
-  }, [showWalkingRoute, destinationCoords?.lat, destinationCoords?.lon, effectiveStartLocation[0], effectiveStartLocation[1]])
+  }, [showWalkingRoute, destinationCoords, effectiveStartLocation])
 
   const handleImportSchedule = (classes: ScheduleClass[]) => {
     setSchedule(classes)
@@ -301,7 +303,7 @@ export default function Home() {
 
   const nearestStopForLeave = useMemo(
     () => getNearestStop(effectiveLocation[0], effectiveLocation[1]),
-    [effectiveLocation[0], effectiveLocation[1]]
+    [effectiveLocation]
   )
   const walkMinutesToStop = useMemo(() => {
     if (!nearestStopForLeave) return null
@@ -309,12 +311,12 @@ export default function Home() {
     const lon = parseFloat(nearestStopForLeave.stop_lon)
     if (isNaN(lat) || isNaN(lon)) return null
     return walkMinutes(effectiveLocation, [lat, lon])
-  }, [effectiveLocation[0], effectiveLocation[1], nearestStopForLeave])
+  }, [effectiveLocation, nearestStopForLeave])
 
   const walkMinutesToDestination = useMemo(() => {
     if (!destinationCoords) return null
     return walkMinutes(effectiveLocation, [destinationCoords.lat, destinationCoords.lon])
-  }, [effectiveLocation[0], effectiveLocation[1], destinationCoords?.lat, destinationCoords?.lon])
+  }, [effectiveLocation, destinationCoords])
 
   const minutesUntilClassStart = nextClassWithLocation
     ? timeToMinutes(nextClassWithLocation.startTime) - currentMinutes
@@ -346,8 +348,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!nearestStopForLeave?.stop_id) {
-      setLeaveInPredictions([])
-      setLeaveInNoBus30Min(false)
+      queueMicrotask(() => {
+        setLeaveInPredictions([])
+        setLeaveInNoBus30Min(false)
+      })
       return
     }
     const fetchLeaveIn = () => {
@@ -417,7 +421,6 @@ export default function Home() {
     return formatTimeFromDate(arrivalDate)
   }, [leaveInPredictions, leaveInNoBus30Min, currentTime])
 
-  const next3Classes = upcomingStarts.slice(0, 3)
   const nextDestination =
     destinationCoords && nextClassWithLocation
       ? {
@@ -442,8 +445,8 @@ export default function Home() {
               to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
             }
             @keyframes splash-glow-pulse {
-              0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2); }
-              50% { text-shadow: 0 0 28px rgba(255,255,255,0.6), 0 0 56px rgba(255,255,255,0.3); }
+              0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 40px rgba(255,255,255,0.15); }
+              50% { text-shadow: 0 0 28px rgba(255,255,255,0.45), 0 0 56px rgba(255,255,255,0.225); }
             }
             @keyframes splash-logo-fade {
               from { opacity: 0; transform: scale(0.35); }
@@ -498,16 +501,16 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col bg-[#F7F7F7]">
-      <header className="relative flex h-16 shrink-0 items-center justify-center bg-[#C5050C] px-6 text-white shadow-md">
-        <div className="absolute right-6 flex items-center gap-2">
-          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/95 backdrop-blur-sm">
+      <header className="relative flex h-16 shrink-0 items-center justify-center bg-[#C5050C] px-6 text-white shadow-header transition-smooth">
+        <div className="absolute right-6 flex items-center gap-2 text-[1.05em]">
+          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white/95 backdrop-blur-sm">
             Route 80
           </span>
           <Link href="/schedule">
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20 font-medium"
+              className="text-white hover:bg-white/20 font-semibold transition-smooth"
             >
               Schedule
             </Button>
@@ -516,7 +519,7 @@ export default function Home() {
             variant="ghost"
             size="sm"
             onClick={() => setAboutOpen(true)}
-            className="text-white hover:bg-white/20 font-medium"
+            className="text-white hover:bg-white/20 font-semibold transition-smooth"
           >
             About
           </Button>
@@ -535,7 +538,7 @@ export default function Home() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="flex w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5">
+        <aside className="flex w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5 shadow-panel transition-smooth">
           {/* Header with schedule button */}
           <div className="mb-6 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
@@ -543,7 +546,7 @@ export default function Home() {
             </h2>
             <Button
               size="icon"
-              className="h-9 w-9 shrink-0 rounded-full bg-[#C5050C] text-white hover:bg-[#9B0000]"
+              className="h-9 w-9 shrink-0 rounded-full bg-[#C5050C] text-white hover:bg-[#9B0000] hover-lift-sm transition-smooth shadow-card"
               onClick={() => setOverlayOpen(true)}
               aria-label="Add or edit schedule"
             >
@@ -557,7 +560,7 @@ export default function Home() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Action Items</h3>
               
               {/* Leave in - Most prominent */}
-              <div className="rounded-xl border-2 border-[#C5050C]/30 bg-gradient-to-br from-[#C5050C]/5 to-white p-4 shadow-sm">
+              <div className="rounded-xl border-2 border-[#C5050C]/30 bg-gradient-to-br from-[#C5050C]/5 to-white p-4 shadow-card hover-lift transition-smooth">
                 <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">Leave in</p>
                 <p className="text-lg font-bold text-[#C5050C]">
                   {leaveInError
@@ -584,7 +587,7 @@ export default function Home() {
 
               {/* Updated departure time - if available */}
               {nextBusArrivalTime && (
-                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-card hover-lift-sm transition-smooth">
                   <p className="text-xs font-medium text-gray-500 mb-1">Next bus arrives at</p>
                   <p className="text-base font-semibold text-[#C5050C]">{nextBusArrivalTime}</p>
                 </div>
@@ -596,14 +599,14 @@ export default function Home() {
           <div className="mb-6 space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Risk Indicators</h3>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
+              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5 shadow-card transition-smooth">
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="h-3.5 w-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Crowd</span>
                 </div>
                 {riskBadge(sidebarCrowdRisk ?? data.crowd_risk)}
               </div>
-              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
+              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5 shadow-card transition-smooth">
                 <div className="flex items-center gap-2 mb-1">
                   <Ghost className="h-3.5 w-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Ghost</span>
@@ -612,7 +615,7 @@ export default function Home() {
               </div>
             </div>
             {activeBusCount !== null && (
-              <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
+              <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5 shadow-card transition-smooth">
                 <div className="flex items-center gap-2">
                   <Bus className="h-3.5 w-3.5 text-[#C5050C]" />
                   <span className="text-xs text-gray-600">Active Route 80 buses</span>
@@ -620,7 +623,7 @@ export default function Home() {
                 <span className="text-sm font-semibold text-[#C5050C]">{activeBusCount}</span>
               </div>
             )}
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2">
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2 shadow-card transition-smooth">
               <RefreshCw className="h-3.5 w-3.5 text-[#C5050C]" />
               <span className="text-xs text-gray-500">Last updated:</span>
               <span className="font-mono text-xs font-medium text-[#333333]">{liveTime}</span>
@@ -638,11 +641,11 @@ export default function Home() {
           </div>
 
           {/* Walk vs Bus Comparison */}
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white">
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white shadow-card transition-smooth">
             <button
               type="button"
               onClick={() => setWalkVsBusOpen((o) => !o)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50"
+              className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50 transition-smooth rounded-xl"
             >
               Walk vs Bus
               {walkVsBusOpen ? (
@@ -652,7 +655,7 @@ export default function Home() {
               )}
             </button>
             {walkVsBusOpen && (
-              <div className="border-t border-gray-200 px-4 pb-4 pt-3">
+              <div className="border-t border-gray-200 px-4 pb-4 pt-3 animate-fade-in-up">
                 {nextClassWithLocation ? (
                   <>
                     <WalkVsBusCard
@@ -696,7 +699,7 @@ export default function Home() {
                       key={i}
                       type="button"
                       onClick={() => setSelectedDay(i)}
-                      className={`flex flex-1 flex-col items-center rounded-md py-2 text-xs font-medium transition-colors ${
+                      className={`flex flex-1 flex-col items-center rounded-md py-2 text-xs font-medium transition-smooth ${
                         selectedDay === i
                           ? "bg-[#C5050C] text-white shadow-sm"
                           : hasClassOnDay(i)
@@ -717,7 +720,7 @@ export default function Home() {
                     itemsForSelectedDay.map((cls) => (
                       <div
                         key={cls.id}
-                        className={`rounded-xl border p-3.5 ${cls.type === "event" ? "border-amber-200 bg-amber-50/50" : "border-gray-200 bg-[#F7F7F7]"}`}
+                        className={`rounded-xl border p-3.5 shadow-card hover-lift-sm transition-smooth ${cls.type === "event" ? "border-amber-200 bg-amber-50/50" : "border-gray-200 bg-[#F7F7F7]"}`}
                       >
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-[#333333]">{cls.name}</p>
@@ -759,13 +762,13 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={() => setLeaveFromPanelOpen((o) => !o)}
-              className="bg-white/95 shadow-md hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900"
+              className="bg-white/95 shadow-panel hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900 transition-smooth hover-lift-sm"
             >
               <MapPin className="h-4 w-4 shrink-0 text-[#C5050C]" />
               {leaveFromLabel ? leaveFromLabel : "Leave from another building?"}
             </Button>
             {leaveFromPanelOpen && (
-              <div className="absolute right-0 bottom-full z-[1011] mb-2 w-80 rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
+              <div className="absolute right-0 bottom-full z-[1011] mb-2 w-80 rounded-xl border border-gray-200 bg-white p-3 shadow-panel animate-expand-in">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#C5050C]">Leave from another building?</p>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
@@ -794,12 +797,12 @@ export default function Home() {
                           }
                         }
                       }}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C]"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C] transition-smooth shadow-input"
                     />
                     {leaveFromDropdownOpen && (() => {
                       const matchedNames = fuzzyMatchLocations(leaveFromInput, 30)
                       return (
-                        <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                        <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-panel animate-expand-in">
                           {matchedNames.length === 0 ? (
                             <li className="px-3 py-2 text-xs text-gray-500">Type an address and click Use to geocode.</li>
                           ) : (
@@ -810,7 +813,7 @@ export default function Home() {
                                 <li key={name}>
                                   <button
                                     type="button"
-                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C]"
+                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C] transition-smooth"
                                     onClick={() => {
                                       setLeaveFromCoords(coords)
                                       setLeaveFromLabel(name)

@@ -87,8 +87,10 @@ export function NearestStopCard({ effectiveLocation, locationStatus, startLabel 
 
   useEffect(() => {
     if (!nearest?.stop_id) {
-      setPredictions([])
-      setNoBusFor30Min(false)
+      queueMicrotask(() => {
+        setPredictions([])
+        setNoBusFor30Min(false)
+      })
       return
     }
     const fetchPredictions = () => {
@@ -113,7 +115,7 @@ export function NearestStopCard({ effectiveLocation, locationStatus, startLabel 
   const firstBus = predictions.length > 0 ? predictions[0] : null
 
   return (
-    <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+    <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-card transition-smooth hover-lift-sm">
       <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
         Nearest stop & bus
       </h2>

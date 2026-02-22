@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Build data/route80_stops.json from GTFS: trips (route 80) → stop_times → stops.
  * Usage: node scripts/build_route80_stops.js [path_to_gtfs]

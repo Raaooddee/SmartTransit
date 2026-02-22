@@ -18,11 +18,15 @@ export function LocationInput({ value, onChange, placeholder, className }: Props
 
   useEffect(() => {
     if (value.trim()) {
-      setSuggestions(fuzzyMatchLocations(value, 6))
-      setOpen(true)
+      queueMicrotask(() => {
+        setSuggestions(fuzzyMatchLocations(value, 6))
+        setOpen(true)
+      })
     } else {
-      setSuggestions([])
-      setOpen(false)
+      queueMicrotask(() => {
+        setSuggestions([])
+        setOpen(false)
+      })
     }
   }, [value])
 
@@ -54,14 +58,15 @@ export function LocationInput({ value, onChange, placeholder, className }: Props
       />
       {open && suggestions.length > 0 && (
         <ul
-          className="absolute z-50 mt-1 max-h-40 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute z-50 mt-1 max-h-40 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-panel animate-expand-in"
           role="listbox"
         >
           {suggestions.map((loc) => (
             <li
               key={loc}
               role="option"
-              className="cursor-pointer px-3 py-2 text-sm text-gray-800 hover:bg-[#F7F7F7] focus:bg-[#F7F7F7]"
+              aria-selected={false}
+              className="cursor-pointer px-3 py-2 text-sm text-gray-800 hover:bg-[#F7F7F7] focus:bg-[#F7F7F7] transition-smooth"
               onMouseDown={(e) => {
                 e.preventDefault()
                 onChange(loc)

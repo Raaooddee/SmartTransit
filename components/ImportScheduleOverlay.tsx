@@ -34,13 +34,15 @@ export function ImportScheduleOverlay({ open, onClose, onImport, initialSchedule
 
   useEffect(() => {
     if (open) {
-      setClasses(
-        initialSchedule?.length
-          ? initialSchedule.map((c) => ({ ...c, id: c.id || crypto.randomUUID(), type: c.type ?? "class" }))
-          : [emptyItem("class")]
+      queueMicrotask(() =>
+        setClasses(
+          initialSchedule?.length
+            ? initialSchedule.map((c) => ({ ...c, id: c.id || crypto.randomUUID(), type: c.type ?? "class" }))
+            : [emptyItem("class")]
+        )
       )
     }
-  }, [open])
+  }, [open, initialSchedule])
 
   const addClass = () => setClasses((c) => [...c, emptyItem("class")])
   const addEvent = () => setClasses((c) => [...c, emptyItem("event")])

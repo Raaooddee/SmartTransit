@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Build lib/uwBuildingsAndHousing.ts: every UW Madison building + apartments and dorms.
  * Sources: Overpass cache (campus/downtown named buildings + apartments) + uw_buildings.json.
@@ -23,7 +24,6 @@ function titleCase(s) {
     .join(" ");
 }
 
-const entries = [];
 const byName = new Map(); // name -> { name, lat, lon }
 
 // 1. From Overpass: all named buildings (UW campus, downtown, apartments, dorms)
