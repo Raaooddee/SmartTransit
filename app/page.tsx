@@ -546,11 +546,7 @@ export default function Home() {
             </h2>
             <Button
               size="icon"
-<<<<<<< HEAD
-              className="h-9 w-9 shrink-0 rounded-full bg-[#C5050C] text-white hover:bg-[#9B0000] cursor-pointer"
-=======
-              className="h-9 w-9 shrink-0 rounded-full bg-[#C5050C] text-white hover:bg-[#9B0000] hover-lift-sm transition-smooth shadow-card"
->>>>>>> dfe74dc9fb76b5ebce3dfff7baccfcf64fb98ed8
+              className="h-9 w-9 shrink-0 rounded-full bg-[#C5050C] text-white hover:bg-[#9B0000] hover-lift-sm transition-smooth shadow-card cursor-pointer"
               onClick={() => setOverlayOpen(true)}
               aria-label="Add or edit schedule"
             >
@@ -649,11 +645,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setWalkVsBusOpen((o) => !o)}
-<<<<<<< HEAD
-              className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50 cursor-pointer"
-=======
-              className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50 transition-smooth rounded-xl"
->>>>>>> dfe74dc9fb76b5ebce3dfff7baccfcf64fb98ed8
+              className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50 transition-smooth rounded-xl cursor-pointer"
             >
               Walk vs Bus
               {walkVsBusOpen ? (
@@ -770,11 +762,7 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={() => setLeaveFromPanelOpen((o) => !o)}
-<<<<<<< HEAD
-              className="bg-white/95 shadow-md hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900 cursor-pointer"
-=======
-              className="bg-white/95 shadow-panel hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900 transition-smooth hover-lift-sm"
->>>>>>> dfe74dc9fb76b5ebce3dfff7baccfcf64fb98ed8
+              className="bg-white/95 shadow-panel hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900 transition-smooth hover-lift-sm cursor-pointer"
             >
               <MapPin className="h-4 w-4 shrink-0 text-[#C5050C]" />
               {leaveFromLabel ? leaveFromLabel : "Leave from another building?"}
@@ -825,11 +813,7 @@ export default function Home() {
                                 <li key={name}>
                                   <button
                                     type="button"
-<<<<<<< HEAD
-                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C] cursor-pointer"
-=======
-                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C] transition-smooth"
->>>>>>> dfe74dc9fb76b5ebce3dfff7baccfcf64fb98ed8
+                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C] transition-smooth cursor-pointer"
                                     onClick={() => {
                                       setLeaveFromCoords(coords)
                                       setLeaveFromLabel(name)
