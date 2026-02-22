@@ -1,32 +1,10 @@
 import { NextResponse } from "next/server"
 import type { BusVehicle } from "@/lib/types"
-import route80Stops from "@/data/route80_stops.json"
 
 const MADISON_METRO_HOST = "metromap.cityofmadison.com"
 const BASE_URL = `http://${MADISON_METRO_HOST}/bustime/api/v3`
 const ROUTES = "80"
 const MAX_VID_PER_PREDICTION_REQUEST = 10
-
-type Route80Stop = { stop_id: string; stop_name: string; stop_lat: string; stop_lon: string }
-const ROUTE80_STOPS = route80Stops as Route80Stop[]
-
-/** Mock bus positions when API key is not set (UW-Madison campus area) */
-const MOCK_BUSES: BusVehicle[] = [
-  { vid: "1", rt: "80", lat: "43.0731", lon: "-89.4012", spd: "12", tmstmp: "", psgld: "" },
-  { vid: "2", rt: "80", lat: "43.0765", lon: "-89.3980", spd: "8", tmstmp: "", psgld: "" },
-  { vid: "3", rt: "80", lat: "43.0702", lon: "-89.4050", spd: "15", tmstmp: "", psgld: "" },
-]
-
-/** Add mock next stop from route 80 stops for demo when no API key */
-function addMockNextStop(vehicles: BusVehicle[]): BusVehicle[] {
-  if (ROUTE80_STOPS.length === 0) return vehicles
-  return vehicles.map((v, i) => ({
-    ...v,
-    next_stop_id: ROUTE80_STOPS[i % ROUTE80_STOPS.length].stop_id,
-    next_stop_name: ROUTE80_STOPS[i % ROUTE80_STOPS.length].stop_name,
-    next_stop_minutes: String((i % 5) + 1),
-  }))
-}
 
 type Prediction = { vid?: string; stpid?: string; stpnm?: string; prdctdn?: string }
 
@@ -76,7 +54,7 @@ export async function GET() {
   const apiKey = process.env.MADISON_METRO_API_KEY
 
   if (!apiKey) {
-    return NextResponse.json({ vehicles: addMockNextStop(MOCK_BUSES) })
+    return NextResponse.json({ vehicles: [] })
   }
 
   try {
@@ -85,7 +63,7 @@ export async function GET() {
       { next: { revalidate: 300 } }
     )
     if (!res.ok) {
-      return NextResponse.json({ vehicles: addMockNextStop(MOCK_BUSES) })
+      return NextResponse.json({ vehicles: [] })
     }
     const data = await res.json()
     const bustime = data["bustime-response"] || {}
@@ -111,6 +89,6 @@ export async function GET() {
 
     return NextResponse.json({ vehicles })
   } catch {
-    return NextResponse.json({ vehicles: addMockNextStop(MOCK_BUSES) })
+    return NextResponse.json({ vehicles: [] })
   }
 }

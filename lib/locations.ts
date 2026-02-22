@@ -1,48 +1,31 @@
 /**
- * Known UW–Madison locations for fuzzy matching.
- * User input is matched against these so slight misspellings still work.
+ * Known UW–Madison locations: all campus buildings + UW-area apartments.
+ * Data and coordinates from lib/locationCoordinates.ts.
  */
-export const KNOWN_LOCATIONS = [
-  "Engineering Hall",
-  "Engineering Centers Building",
-  "Memorial Union",
-  "Union South",
-  "Van Vleck Hall",
-  "Computer Sciences",
-  "Computer Sciences and Statistics",
-  "Grainger Hall",
-  "Business School",
-  "Education Building",
-  "Social Science Building",
-  "Humanities Building",
-  "Chadbourne Hall",
-  "Witte Hall",
-  "Sellery Hall",
-  "Dejope Hall",
-  "Wendt Commons",
-  "Steenbock Library",
-  "College Library",
-  "Memorial Library",
-  "Mechanical Engineering Building",
-  "Materials Science and Engineering",
-  "Chemistry Building",
-  "Psychology Building",
-  "Agricultural Hall",
-  "Bascom Hall",
-  "Science Hall",
-  "Ingraham Hall",
-  "Sterling Hall",
-  "Birge Hall",
-  "Brogden Psychology",
-  "Vilas Hall",
-  "Medical Sciences Center",
-  "Health Sciences Learning Center",
-  "UW Hospital",
-  "Nick Recreation",
-  "Bakke Recreation",
-  "Kohl Center",
-  "Camp Randall",
-] as const
+import type { LocationEntry } from "./locationCoordinates"
+import { LOCATION_ENTRIES } from "./locationCoordinates"
+
+export const KNOWN_LOCATIONS = LOCATION_ENTRIES.map((e: LocationEntry) => e.name) as readonly string[]
+
+export const LOCATION_COORDINATES: Record<string, { lat: number; lon: number }> = Object.fromEntries(
+  LOCATION_ENTRIES.map((e: LocationEntry) => [e.name, { lat: e.lat, lon: e.lon }])
+)
+
+export function getLocationCoordinates(name: string): { lat: number; lon: number } | undefined {
+  return LOCATION_COORDINATES[name]
+}
+
+export function getLocationGoogleMapsUrl(name: string): string {
+  const coords = getLocationCoordinates(name)
+  if (coords) return `https://www.google.com/maps?q=${coords.lat},${coords.lon}`
+  const query = encodeURIComponent(`${name.trim()} Madison WI`)
+  return `https://www.google.com/maps/search/?api=1&query=${query}`
+}
+
+export function getLocationGoogleSearchUrl(name: string): string {
+  const query = encodeURIComponent(`${name.trim()} Madison WI`)
+  return `https://www.google.com/search?q=${query}`
+}
 
 function normalize(s: string): string {
   return s
