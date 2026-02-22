@@ -707,11 +707,7 @@ export default function Home() {
                       key={i}
                       type="button"
                       onClick={() => setSelectedDay(i)}
-<<<<<<< HEAD
-                      className={`flex flex-1 flex-col items-center rounded-md py-2 text-xs font-medium transition-colors cursor-pointer ${
-=======
-                      className={`flex flex-1 flex-col items-center rounded-md py-2 text-xs font-medium transition-smooth ${
->>>>>>> dfe74dc9fb76b5ebce3dfff7baccfcf64fb98ed8
+                      className={`flex flex-1 flex-col items-center rounded-md py-2 text-xs font-medium transition-smooth cursor-pointer ${
                         selectedDay === i
                           ? "bg-[#C5050C] text-white shadow-sm"
                           : hasClassOnDay(i)
