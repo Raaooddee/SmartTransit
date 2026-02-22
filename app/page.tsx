@@ -467,10 +467,10 @@ export default function Home() {
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="flex w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5">
-          {/* 1) Next class + button */}
-          <div className="mb-4 flex items-center justify-between gap-2">
+          {/* Header with schedule button */}
+          <div className="mb-6 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
-              Next class
+              Your Schedule
             </h2>
             <Button
               size="icon"
@@ -482,21 +482,91 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Nearest stop & bus (from current or leave-from location) */}
-          <NearestStopCard
-            effectiveLocation={effectiveStartLocation}
-            locationStatus={locationStatus}
-            startLabel={leaveFromLabel}
-          />
+          {/* Action Items - Most Important Info First */}
+          {upcomingStarts.length > 0 && (
+            <div className="mb-6 space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Action Items</h3>
+              
+              {/* Leave in - Most prominent */}
+              <div className="rounded-xl border-2 border-[#C5050C]/30 bg-gradient-to-br from-[#C5050C]/5 to-white p-4 shadow-sm">
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">Leave in</p>
+                <p className="text-lg font-bold text-[#C5050C]">
+                  {leaveInError
+                    ? "—"
+                    : leaveInForWalk != null && nextClassWithLocation
+                      ? `${leaveInForWalk} min`
+                      : leaveInForWalkNoBus != null && nextClassWithLocation
+                        ? `${leaveInForWalkNoBus} min`
+                        : leaveInPredictions.length > 0 && leaveInPredictions[0].prdctdn != null && walkMinutesToStop != null && nearestStopForLeave
+                          ? `${walkMinutesToStop + Number(leaveInPredictions[0].prdctdn)} min`
+                          : "—"}
+                </p>
+                {nextClassWithLocation && (
+                  <p className="mt-1 text-sm text-gray-600">
+                    for {nextClassWithLocation.name}
+                  </p>
+                )}
+                {nearestStopForLeave && !nextClassWithLocation && (
+                  <p className="mt-1 text-sm text-gray-600">
+                    for {nearestStopForLeave.stop_name}
+                  </p>
+                )}
+              </div>
 
-          {/* Left dashboard: Walk vs bus (dropdown) */}
-          <div className="mb-4 rounded-xl border border-gray-200 bg-white">
+              {/* Updated departure time - if available */}
+              {nextBusArrivalTime && (
+                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+                  <p className="text-xs font-medium text-gray-500 mb-1">Next bus arrives at</p>
+                  <p className="text-base font-semibold text-[#C5050C]">{nextBusArrivalTime}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Risk Indicators */}
+          <div className="mb-6 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Risk Indicators</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="text-xs text-gray-600">Crowd</span>
+                </div>
+                {riskBadge(data.crowd_risk)}
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Ghost className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="text-xs text-gray-600">Ghost</span>
+                </div>
+                {ghostRiskBadge(data.ghost_risk)}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2">
+              <RefreshCw className="h-3.5 w-3.5 text-[#C5050C]" />
+              <span className="text-xs text-gray-500">Last updated:</span>
+              <span className="font-mono text-xs font-medium text-[#333333]">{liveTime}</span>
+            </div>
+          </div>
+
+          {/* Nearest Stop & Bus Info */}
+          <div className="mb-6">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Nearest Stop</h3>
+            <NearestStopCard
+              effectiveLocation={effectiveStartLocation}
+              locationStatus={locationStatus}
+              startLabel={leaveFromLabel}
+            />
+          </div>
+
+          {/* Walk vs Bus Comparison */}
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white">
             <button
               type="button"
               onClick={() => setWalkVsBusOpen((o) => !o)}
               className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50"
             >
-              Walk vs bus
+              Walk vs Bus
               {walkVsBusOpen ? (
                 <ChevronUp className="h-4 w-4 shrink-0" />
               ) : (
@@ -534,81 +604,11 @@ export default function Home() {
             )}
           </div>
 
-          {/* 2) Next 3 class cards */}
-          <div className="mb-4 flex flex-col gap-3">
-            {next3Classes.length > 0 ? (
-              next3Classes.map((cls) => (
-                <div key={cls.id} className={`rounded-xl border p-4 ${cls.type === "event" ? "border-amber-200 bg-amber-50/50" : "border-gray-200 bg-[#F7F7F7]"}`}>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-[#333333]">{cls.name}</p>
-                    {cls.type === "event" && (
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase bg-amber-200/80 text-amber-800">Event</span>
-                    )}
-                  </div>
-                  <p className="mt-0.5 text-sm text-gray-600">
-                    {formatTime(cls.startTime)} – {formatTime(cls.endTime)}
-                  </p>
-                  {cls.location && (
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-[#C5050C]">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      {cls.location}
-                    </p>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
-                <p className="text-sm text-gray-500">No more classes today. Add classes with the + button.</p>
-              </div>
-            )}
-          </div>
-
-          {/* 3) Stats */}
-          <div className="mb-6 flex flex-col gap-3">
-            {upcomingStarts.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] p-4">
-                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Leave in</p>
-                <p className="mt-1 font-semibold text-[#C5050C]">
-                  {leaveInError
-                    ? "—"
-                    : leaveInForWalk != null && nextClassWithLocation
-                      ? `Leave in ${leaveInForWalk} min for ${nextClassWithLocation.name}`
-                      : leaveInForWalkNoBus != null && nextClassWithLocation
-                        ? `Start walking in ${leaveInForWalkNoBus} min for ${nextClassWithLocation.name}`
-                        : leaveInPredictions.length > 0 && leaveInPredictions[0].prdctdn != null && walkMinutesToStop != null && nearestStopForLeave
-                          ? `Leave in ${walkMinutesToStop + Number(leaveInPredictions[0].prdctdn)} min for ${nearestStopForLeave.stop_name}`
-                          : "—"}
-                </p>
-              </div>
-            )}
-            {nextBusArrivalTime && (
-              <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-                <span className="text-sm text-gray-600">Updated departure time</span>
-                <span className="font-semibold text-[#C5050C]">{nextBusArrivalTime}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-              <Users className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">Crowd risk</span>
-              {riskBadge(data.crowd_risk)}
-            </div>
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
-              <Ghost className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">Ghost risk</span>
-              {ghostRiskBadge(data.ghost_risk)}
-            </div>
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-2.5">
-              <RefreshCw className="h-4 w-4 text-[#C5050C]" />
-              <span className="text-xs text-gray-500">Live</span>
-              <span className="font-mono text-sm font-medium text-[#333333]">{liveTime}</span>
-            </div>
-          </div>
-
-          {/* 4) Your schedule (bottom) with week strip + day view */}
+          {/* Full Schedule View (bottom) */}
           <div className="mt-auto border-t border-gray-200 pt-5">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
-              Your schedule
-            </h2>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Full Schedule
+            </h3>
             {schedule.length > 0 ? (
               <>
                 <p className="mb-2 text-xs text-gray-500">Tap a day to view schedule</p>
