@@ -85,6 +85,25 @@ function destPinIcon(): L.DivIcon {
   })
 }
 
+const LEAVE_FROM_PIN_SIZE = 24
+const LEAVE_FROM_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="${LEAVE_FROM_PIN_SIZE}" height="${LEAVE_FROM_PIN_SIZE * 1.5}" fill="none">
+  <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="#0d9488" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="12" cy="12" r="4" fill="#fff"/>
+</svg>`
+
+function leaveFromPinIcon(): L.DivIcon {
+  return L.divIcon({
+    className: "leave-from-pin-icon",
+    html: `<div style="
+      width:${LEAVE_FROM_PIN_SIZE}px;height:${LEAVE_FROM_PIN_SIZE * 1.5}px;
+      display:flex;align-items:center;justify-content:center;
+      filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    ">${LEAVE_FROM_PIN_SVG}</div>`,
+    iconSize: [LEAVE_FROM_PIN_SIZE, LEAVE_FROM_PIN_SIZE * 1.5],
+    iconAnchor: [LEAVE_FROM_PIN_SIZE / 2, LEAVE_FROM_PIN_SIZE * 1.5],
+  })
+}
+
 /** Centers and zooms the map on user location when they click "My location" */
 function LocationCenterer({
   userLocation,
@@ -118,6 +137,8 @@ function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
 
 type MapDestination = { name: string; location: string; coords: { lat: number; lon: number } }
 
+type LeaveFrom = { coords: { lat: number; lon: number }; label: string }
+
 export function BusMapInner({
   vehicles,
   crowdRisk,
@@ -126,6 +147,7 @@ export function BusMapInner({
   onRequestLocation,
   destination,
   walkingRoute,
+  leaveFrom,
 }: {
   vehicles: BusVehicle[]
   crowdRisk: CrowdRisk | null
@@ -134,10 +156,12 @@ export function BusMapInner({
   onRequestLocation?: () => void
   destination?: MapDestination | null
   walkingRoute?: [number, number][] | null
+  leaveFrom?: LeaveFrom | null
 }) {
   const icon = busMarkerIcon()
   const stopIcon = stopPinIcon()
   const destIcon = destPinIcon()
+  const leaveFromIcon = leaveFromPinIcon()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [centerTrigger, setCenterTrigger] = useState(0)
   const watchIdRef = useRef<number | null>(null)
@@ -233,6 +257,19 @@ export function BusMapInner({
               lineCap: "round",
             }}
           />
+        )}
+        {leaveFrom?.coords && (
+          <Marker
+            key="leave-from"
+            position={[leaveFrom.coords.lat, leaveFrom.coords.lon]}
+            icon={leaveFromIcon}
+          >
+            <Tooltip direction="top" offset={[0, -LEAVE_FROM_PIN_SIZE]} opacity={0.95} permanent={false}>
+              <strong>Leaving from</strong>
+              <br />
+              {leaveFrom.label}
+            </Tooltip>
+          </Marker>
         )}
         {destination?.coords && (
           <Marker

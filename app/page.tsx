@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { mockNextClass } from "@/lib/mock"
 import type { NextClassResponse, ScheduleClass } from "@/lib/types"
 import { FALLBACK_LOCATION } from "@/lib/constants"
@@ -15,6 +15,8 @@ import { SmartTransitLogo } from "@/components/SmartTransitLogo"
 import { NearestStopCard, getNearestStop } from "@/components/NearestStopCard"
 import { walkMinutes } from "@/lib/walk-vs-bus"
 import { WalkVsBusCard } from "@/components/WalkVsBusCard"
+import { getLocationCoordinates, fuzzyMatchLocations, bestMatchOrInput } from "@/lib/locations"
+
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
 const SCHEDULE_STORAGE_KEY = "smarttransit-schedule"
@@ -22,7 +24,7 @@ const POLL_MS = 60 * 1000
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const DAY_SHORT = ["S", "M", "T", "W", "T", "F", "S"]
 
-function riskBadge(risk: NextClassResponse["crowd_risk"]) {
+function riskBadge(risk: NextClassResponse["crowd_risk"] | NextClassResponse["ghost_risk"]) {
   if (risk === "low") return <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/40">Low</Badge>
   if (risk === "medium") return <Badge className="bg-amber-500/20 text-amber-800 border-amber-500/40">Medium</Badge>
   return <Badge className="bg-red-500/20 text-[#9B0000] border-red-500/40">High</Badge>
@@ -69,6 +71,12 @@ export default function Home() {
   const [leaveInPredictions, setLeaveInPredictions] = useState<{ prdctdn?: string }[]>([])
   const [leaveInNoBus30Min, setLeaveInNoBus30Min] = useState(false)
   const [leaveInError, setLeaveInError] = useState(false)
+  const [leaveFromCoords, setLeaveFromCoords] = useState<{ lat: number; lon: number } | null>(null)
+  const [leaveFromLabel, setLeaveFromLabel] = useState<string | null>(null)
+  const [leaveFromInput, setLeaveFromInput] = useState("")
+  const [leaveFromLoading, setLeaveFromLoading] = useState(false)
+  const [leaveFromDropdownOpen, setLeaveFromDropdownOpen] = useState(false)
+  const leaveFromDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -104,6 +112,22 @@ export default function Home() {
       },
       { enableHighAccuracy: false, maximumAge: 0, timeout: 30000 }
     )
+  }
+
+  const handleUseLeaveFrom = () => {
+    const q = leaveFromInput.trim()
+    if (!q) return
+    setLeaveFromLoading(true)
+    fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.ok && typeof d.lat === "number" && typeof d.lon === "number") {
+          setLeaveFromCoords({ lat: d.lat, lon: d.lon })
+          setLeaveFromLabel(q || d.display_name || "Start")
+        }
+        setLeaveFromLoading(false)
+      })
+      .catch(() => setLeaveFromLoading(false))
   }
 
   useEffect(() => {
@@ -142,6 +166,16 @@ export default function Home() {
     localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(schedule))
   }, [schedule])
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (leaveFromDropdownRef.current && !leaveFromDropdownRef.current.contains(e.target as Node)) {
+        setLeaveFromDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
   const now = new Date()
   const today = now.getDay()
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
@@ -155,9 +189,18 @@ export default function Home() {
   const nextClassWithLocation = upcomingStarts.find((c) => c.location?.trim()) ?? null
   const nextDestLocation = nextClassWithLocation?.location?.trim() ?? null
 
+  const effectiveStartLocation: [number, number] = leaveFromCoords
+    ? [leaveFromCoords.lat, leaveFromCoords.lon]
+    : effectiveLocation
+
   useEffect(() => {
     if (!nextDestLocation) {
       setDestinationCoords(null)
+      return
+    }
+    const knownCoords = getLocationCoordinates(bestMatchOrInput(nextDestLocation))
+    if (knownCoords) {
+      setDestinationCoords(knownCoords)
       return
     }
     fetch(`/api/geocode?q=${encodeURIComponent(nextDestLocation)}`)
@@ -177,7 +220,7 @@ export default function Home() {
       setWalkingRoutePath(null)
       return
     }
-    const [fromLat, fromLon] = effectiveLocation
+    const [fromLat, fromLon] = effectiveStartLocation
     const { lat: toLat, lon: toLon } = destinationCoords
     const params = new URLSearchParams({
       fromLat: String(fromLat),
@@ -195,7 +238,7 @@ export default function Home() {
         }
       })
       .catch(() => setWalkingRoutePath(null))
-  }, [showWalkingRoute, destinationCoords?.lat, destinationCoords?.lon, effectiveLocation[0], effectiveLocation[1]])
+  }, [showWalkingRoute, destinationCoords?.lat, destinationCoords?.lon, effectiveStartLocation[0], effectiveStartLocation[1]])
 
   const handleImportSchedule = (classes: ScheduleClass[]) => {
     setSchedule(classes)
@@ -397,8 +440,113 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Nearest stop & bus (from current or default location) */}
-          <NearestStopCard effectiveLocation={effectiveLocation} locationStatus={locationStatus} />
+          {/* Leave from another building */}
+          <div ref={leaveFromDropdownRef} className="relative mb-4 rounded-xl border border-gray-200 bg-white p-4">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
+              Leave from another building?
+            </h2>
+            <p className="mb-3 text-xs text-gray-600">
+              Search campus buildings and apartments, or type any address and click Use.
+            </p>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="e.g. Bascom Hall, Morgridge, Dejope"
+                  value={leaveFromInput}
+                  onChange={(e) => {
+                    setLeaveFromInput(e.target.value)
+                    setLeaveFromDropdownOpen(true)
+                  }}
+                  onFocus={() => setLeaveFromDropdownOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      const canonical = bestMatchOrInput(leaveFromInput.trim())
+                      const coords = getLocationCoordinates(canonical)
+                      if (coords) {
+                        setLeaveFromCoords(coords)
+                        setLeaveFromLabel(canonical)
+                        setLeaveFromInput(canonical)
+                        setLeaveFromDropdownOpen(false)
+                      } else {
+                        handleUseLeaveFrom()
+                      }
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C]"
+                />
+                {leaveFromDropdownOpen && (() => {
+                  const matchedNames = fuzzyMatchLocations(leaveFromInput, 30)
+                  return (
+                    <ul className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                      {matchedNames.length === 0 ? (
+                        <li className="px-3 py-2 text-xs text-gray-500">No locations match. Type an address and click Use to geocode.</li>
+                      ) : (
+                        matchedNames.map((name) => {
+                          const coords = getLocationCoordinates(name)
+                          if (!coords) return null
+                          return (
+                            <li key={name}>
+                              <button
+                                type="button"
+                                className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C]"
+                                onClick={() => {
+                                  setLeaveFromCoords(coords)
+                                  setLeaveFromLabel(name)
+                                  setLeaveFromInput(name)
+                                  setLeaveFromDropdownOpen(false)
+                                }}
+                              >
+                                {name}
+                              </button>
+                            </li>
+                          )
+                        })
+                      )}
+                    </ul>
+                  )
+                })()}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="shrink-0 bg-[#C5050C] text-white hover:bg-[#9B0000]"
+                onClick={handleUseLeaveFrom}
+                disabled={!leaveFromInput.trim() || leaveFromLoading}
+              >
+                {leaveFromLoading ? "…" : "Use"}
+              </Button>
+              {(leaveFromCoords || leaveFromLabel) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => {
+                    setLeaveFromCoords(null)
+                    setLeaveFromLabel(null)
+                    setLeaveFromInput("")
+                    setLeaveFromDropdownOpen(false)
+                  }}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            {leaveFromLabel && (
+              <p className="mt-2 text-xs text-[#C5050C]">
+                Using <strong>{leaveFromLabel}</strong> as start for nearest stop, walk vs bus, and walking route.
+              </p>
+            )}
+          </div>
+
+          {/* Nearest stop & bus (from current or leave-from location) */}
+          <NearestStopCard
+            effectiveLocation={effectiveStartLocation}
+            locationStatus={locationStatus}
+            startLabel={leaveFromLabel}
+          />
 
           {/* Left dashboard: Walk vs bus (dropdown) */}
           <div className="mb-4 rounded-xl border border-gray-200 bg-white">
@@ -419,8 +567,9 @@ export default function Home() {
                 {nextClassWithLocation ? (
                   <>
                     <WalkVsBusCard
-                      effectiveLocation={effectiveLocation}
+                      effectiveLocation={effectiveStartLocation}
                       nextItem={nextClassWithLocation}
+                      destCoords={destinationCoords}
                     />
                     {destinationCoords && (
                       <Button
@@ -588,6 +737,11 @@ export default function Home() {
             onRequestLocation={handleRequestLocation}
             destination={nextDestination}
             walkingRoute={showWalkingRoute ? walkingRoutePath : null}
+            leaveFrom={
+              leaveFromCoords && leaveFromLabel
+                ? { coords: leaveFromCoords, label: leaveFromLabel }
+                : null
+            }
           />
         </main>
       </div>

@@ -17,9 +17,11 @@ type Props = {
   effectiveLocation: [number, number]
   /** Next class/event to show walk vs bus for (must have location). */
   nextItem: { name: string; location: string } | null
+  /** When provided, use these coords for destination (enables all known locations). */
+  destCoords?: { lat: number; lon: number } | null
 }
 
-export function WalkVsBusCard({ effectiveLocation, nextItem }: Props) {
+export function WalkVsBusCard({ effectiveLocation, nextItem, destCoords }: Props) {
   const [data, setData] = useState<WalkVsBusData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -35,8 +37,13 @@ export function WalkVsBusCard({ effectiveLocation, nextItem }: Props) {
     const params = new URLSearchParams({
       userLat: String(lat),
       userLon: String(lon),
-      destBuilding: nextItem.location.trim(),
     })
+    if (destCoords) {
+      params.set("destLat", String(destCoords.lat))
+      params.set("destLon", String(destCoords.lon))
+    } else {
+      params.set("destBuilding", nextItem.location.trim())
+    }
     fetch(`/api/walk-vs-bus?${params}`)
       .then((r) => r.json())
       .then((d) => {
@@ -47,7 +54,7 @@ export function WalkVsBusCard({ effectiveLocation, nextItem }: Props) {
         setError(true)
         setLoading(false)
       })
-  }, [effectiveLocation, nextItem?.location, nextItem?.name])
+  }, [effectiveLocation, nextItem?.location, nextItem?.name, destCoords?.lat, destCoords?.lon])
 
   if (!nextItem?.location?.trim()) return null
 

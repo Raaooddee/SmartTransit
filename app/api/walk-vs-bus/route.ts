@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { resolveBuildingCoords, walkMinutes } from "@/lib/walk-vs-bus"
+import { getLocationCoordinates } from "@/lib/locations"
 import { stopsBetweenAndMinutes, MINUTES_PER_STOP_AVERAGE } from "@/lib/route80-eta"
 import type { Route80Variant } from "@/lib/route80-types"
 import route80Stops from "@/data/route80_stops.json"
@@ -84,7 +85,8 @@ export async function GET(request: NextRequest) {
     destLat = parseFloat(destLatParam)
     destLon = parseFloat(destLonParam)
   } else if (destBuilding) {
-    const coords = resolveBuildingCoords(destBuilding, BUILDINGS)
+    const knownCoords = getLocationCoordinates(destBuilding)
+    const coords = knownCoords ?? resolveBuildingCoords(destBuilding, BUILDINGS)
     if (!coords) {
       return NextResponse.json({
         ok: false,

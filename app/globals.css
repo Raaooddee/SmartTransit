@@ -158,6 +158,11 @@
   border: none !important;
 }
 
+.leaflet-div-icon.leave-from-pin-icon {
+  background: none !important;
+  border: none !important;
+}
+
 /* Splash: letters form "SmartTransit" with futuristic staggered reveal */
 @keyframes splash-letter-in {
   from {

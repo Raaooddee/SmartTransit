@@ -69,11 +69,13 @@ function directionLabel(p: Prediction): string {
 type Props = {
   effectiveLocation: [number, number]
   locationStatus: LocationStatus
+  /** When set, show "Leaving from: {label}" above the card content */
+  startLabel?: string | null
 }
 
 const POLL_MS = 60 * 1000
 
-export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
+export function NearestStopCard({ effectiveLocation, locationStatus, startLabel }: Props) {
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [predictionsError, setPredictionsError] = useState(false)
   const [noBusFor30Min, setNoBusFor30Min] = useState(false)
@@ -112,9 +114,16 @@ export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
 
   return (
     <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
+      <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
         Nearest stop & bus
       </h2>
+      {startLabel ? (
+        <p className="mb-3 text-xs text-gray-600">
+          Leaving from: <strong>{startLabel}</strong>
+        </p>
+      ) : (
+        <div className="mb-3" />
+      )}
 
       {locationStatus === "loading" && (
         <p className="text-sm text-gray-500">Getting location…</p>

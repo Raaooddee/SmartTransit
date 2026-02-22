@@ -14,12 +14,15 @@ export type MapDestination = {
   coords: { lat: number; lon: number }
 }
 
+export type LeaveFrom = { coords: { lat: number; lon: number }; label: string }
+
 type BusMapProps = {
   effectiveLocation?: [number, number]
   locationStatus?: LocationStatus
   onRequestLocation?: () => void
   destination?: MapDestination | null
   walkingRoute?: [number, number][] | null
+  leaveFrom?: LeaveFrom | null
 }
 
 export function BusMap({
@@ -28,6 +31,7 @@ export function BusMap({
   onRequestLocation,
   destination,
   walkingRoute,
+  leaveFrom,
 }: BusMapProps = {}) {
   const [vehicles, setVehicles] = useState<BusVehicle[]>([])
   const [crowdRisk, setCrowdRisk] = useState<CrowdRisk | null>(null)
@@ -40,6 +44,7 @@ export function BusMap({
       onRequestLocation?: () => void
       destination?: MapDestination | null
       walkingRoute?: [number, number][] | null
+      leaveFrom?: LeaveFrom | null
     }> | null
   >(null)
 
@@ -83,6 +88,7 @@ export function BusMap({
       onRequestLocation={onRequestLocation}
       destination={destination}
       walkingRoute={walkingRoute}
+      leaveFrom={leaveFrom}
     />
   )
 }
