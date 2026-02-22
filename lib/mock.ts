@@ -17,6 +17,6 @@ export const mockNextClass: NextClassResponse = {
   leave_in: "6–12 minutes (departure window)",
   updated_departure_time: "9:02 AM",
   crowd_risk: "high",
-  ghost_risk: "low",
+  ghost_risk: 12.5, // 12.5% chance of ghost bus
   live_updated: "12:41:18"
 }

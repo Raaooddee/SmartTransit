@@ -16,7 +16,7 @@ export type NextClassResponse = {
   leave_in: string
   updated_departure_time: string
   crowd_risk: "low" | "medium" | "high"
-  ghost_risk: "low" | "high"
+  ghost_risk: number // Percentage chance (0-100)
   live_updated: string
 }
 

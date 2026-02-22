@@ -25,8 +25,10 @@ If `CROWDING_SERVICE_URL` is not set, the app falls back to the in-app TypeScrip
 ### Endpoints
 
 - `GET /crowding?stop=...&route=80` – Returns `crowd_risk`, `crowding`, optional `score`, and `route`.
+- `GET /ghost-risk?stop=...&route=80` – Returns `ghost_risk` ("low" or "high") and `route`. Detects when scheduled buses don't actually show up.
 - `GET /health` – Health check.
 
 ### Optional env (backend)
 
 - `OPEN_METEO_BASE_URL` – Override Open-Meteo API base (default: `https://api.open-meteo.com`).
+- `MADISON_METRO_API_KEY` – Required for ghost risk detection to fetch live vehicle data.

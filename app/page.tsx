@@ -20,10 +20,21 @@ const SCHEDULE_STORAGE_KEY = "smarttransit-schedule"
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const DAY_SHORT = ["S", "M", "T", "W", "T", "F", "S"]
 
-function riskBadge(risk: NextClassResponse["crowd_risk"] | NextClassResponse["ghost_risk"]) {
+function riskBadge(risk: NextClassResponse["crowd_risk"]) {
   if (risk === "low") return <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/40">Low</Badge>
   if (risk === "medium") return <Badge className="bg-amber-500/20 text-amber-800 border-amber-500/40">Medium</Badge>
   return <Badge className="bg-red-500/20 text-[#9B0000] border-red-500/40">High</Badge>
+}
+
+function ghostRiskBadge(percent: number) {
+  // Color based on percentage: green (<30%), yellow (30-60%), red (>60%)
+  if (percent < 30) {
+    return <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/40">{percent.toFixed(1)}%</Badge>
+  } else if (percent < 60) {
+    return <Badge className="bg-amber-500/20 text-amber-800 border-amber-500/40">{percent.toFixed(1)}%</Badge>
+  } else {
+    return <Badge className="bg-red-500/20 text-[#9B0000] border-red-500/40">{percent.toFixed(1)}%</Badge>
+  }
 }
 
 function formatTime(t: string) {
@@ -409,7 +420,7 @@ export default function Home() {
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-3">
               <Ghost className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Ghost risk</span>
-              {riskBadge(data.ghost_risk)}
+              {ghostRiskBadge(data.ghost_risk)}
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-[#F7F7F7] px-4 py-2.5">
               <RefreshCw className="h-4 w-4 text-[#C5050C]" />

@@ -12,18 +12,32 @@ export async function GET(request: Request) {
 
   if (CROWDING_SERVICE_URL) {
     try {
-      const url = new URL("/crowding", CROWDING_SERVICE_URL)
-      url.searchParams.set("stop", stop)
-      const res = await fetch(url.toString(), { next: { revalidate: 60 } })
-      if (res.ok) {
-        const crowding = await res.json()
+      // Fetch crowding data
+      const crowdingUrl = new URL("/crowding", CROWDING_SERVICE_URL)
+      crowdingUrl.searchParams.set("stop", stop)
+      const crowdingRes = await fetch(crowdingUrl.toString(), { next: { revalidate: 60 } })
+      if (crowdingRes.ok) {
+        const crowding = await crowdingRes.json()
         data.crowd_risk = crowding.crowd_risk
       }
     } catch {
       // use mock crowd_risk when service down
     }
+
+    try {
+      // Fetch ghost risk data
+      const ghostUrl = new URL("/ghost-risk", CROWDING_SERVICE_URL)
+      ghostUrl.searchParams.set("stop", stop)
+      const ghostRes = await fetch(ghostUrl.toString(), { next: { revalidate: 60 } })
+      if (ghostRes.ok) {
+        const ghost = await ghostRes.json()
+        data.ghost_risk = ghost.ghost_risk
+      }
+    } catch {
+      // use mock ghost_risk when service down
+    }
   }
-  // If CROWDING_SERVICE_URL not set, keep mock crowd_risk
+  // If CROWDING_SERVICE_URL not set, keep mock values
 
   data.live_updated = new Date().toLocaleTimeString("en-US", {
     hour12: false,
