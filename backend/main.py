@@ -5,9 +5,17 @@ Run with: uvicorn main:app --reload --port 8000
 """
 
 import os
+from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
+
+# Load .env.local from project root (parent of backend/) so one file works for Next.js and backend
+_project_root = Path(__file__).resolve().parent.parent
+load_dotenv(_project_root / ".env.local")
+load_dotenv(_project_root / ".env")
+
 from fastapi.middleware.cors import CORSMiddleware
 
 from crowding import get_crowding, get_ghost_risk

@@ -40,5 +40,7 @@ If `CROWDING_SERVICE_URL` is not set, the app falls back to the in-app default (
 
 ### Optional env (backend)
 
+Env vars are loaded from the **project root** (one level above `backend/`): `.env.local` first, then `.env`. Use the same `.env.local` as the Next.js app so one file holds all keys.
+
 - `OPEN_METEO_BASE_URL` – Override Open-Meteo API base (default: `https://api.open-meteo.com`).
 - `MADISON_METRO_API_KEY` – Required for ghost risk detection to fetch live vehicle data.
