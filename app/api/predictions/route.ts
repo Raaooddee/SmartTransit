@@ -142,6 +142,14 @@ export async function GET(request: NextRequest) {
       const mb = Number(b.prdctdn) ?? Infinity
       return ma - mb
     })
+
+    if (sorted.length === 0 && vehicles.length >= 1) {
+      return NextResponse.json({
+        predictions: [],
+        no_bus_for_30_min: true,
+      })
+    }
+
     return NextResponse.json({ predictions: sorted })
   } catch {
     return NextResponse.json({ predictions: [] })

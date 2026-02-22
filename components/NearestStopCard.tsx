@@ -5,7 +5,7 @@ import route80Stops from "@/data/route80_stops.json"
 import { FALLBACK_LABEL } from "@/lib/constants"
 import { MapPin, Bus } from "lucide-react"
 
-type RouteStop = { stop_id: string; stop_name: string; stop_lat: string; stop_lon: string }
+export type RouteStop = { stop_id: string; stop_name: string; stop_lat: string; stop_lon: string }
 const STOPS = route80Stops as RouteStop[]
 
 export type LocationStatus = "loading" | "granted" | "denied" | "fallback"
@@ -28,7 +28,7 @@ function haversineKm(
   return R * c
 }
 
-function nearestStop(lat: number, lon: number): RouteStop | null {
+export function getNearestStop(lat: number, lon: number): RouteStop | null {
   if (STOPS.length === 0) return null
   let best = STOPS[0]
   let bestDist = Infinity
@@ -45,7 +45,11 @@ function nearestStop(lat: number, lon: number): RouteStop | null {
   return best
 }
 
-type Prediction = {
+function nearestStop(lat: number, lon: number): RouteStop | null {
+  return getNearestStop(lat, lon)
+}
+
+export type NearestStopPrediction = {
   vid?: string
   prdctdn?: string
   stpnm?: string
@@ -54,6 +58,7 @@ type Prediction = {
   estimated?: boolean
   stops_between?: number
 }
+type Prediction = NearestStopPrediction
 
 function directionLabel(p: Prediction): string {
   if (p.des && String(p.des).trim()) return String(p.des).trim()
@@ -71,6 +76,7 @@ const POLL_MS = 60 * 1000
 export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [predictionsError, setPredictionsError] = useState(false)
+  const [noBusFor30Min, setNoBusFor30Min] = useState(false)
 
   const nearest = useMemo(() => {
     const [lat, lon] = effectiveLocation
@@ -80,6 +86,7 @@ export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
   useEffect(() => {
     if (!nearest?.stop_id) {
       setPredictions([])
+      setNoBusFor30Min(false)
       return
     }
     const fetchPredictions = () => {
@@ -87,10 +94,12 @@ export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
         .then((r) => r.json())
         .then((d) => {
           setPredictions(Array.isArray(d.predictions) ? d.predictions : [])
+          setNoBusFor30Min(Boolean(d.no_bus_for_30_min))
           setPredictionsError(false)
         })
         .catch(() => {
           setPredictions([])
+          setNoBusFor30Min(false)
           setPredictionsError(true)
         })
     }
@@ -160,6 +169,8 @@ export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
                     </>
                   ) : predictionsError ? (
                     "Could not load bus predictions."
+                  ) : noBusFor30Min ? (
+                    "No bus predicted at this stop for 30+ minutes."
                   ) : (
                     "No bus predicted at this stop."
                   )}
