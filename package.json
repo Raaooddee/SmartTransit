@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently -n next,backend \"npm run dev:next\" \"npm run backend\"",
     "dev:next": "next dev -p 3000",
-    "backend": "cd backend && python3 -m uvicorn main:app --reload --port 8000",
+    "backend": "PYTHONPATH=backend python3 -m uvicorn main:app --reload --port 8000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
