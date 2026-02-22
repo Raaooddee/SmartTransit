@@ -8,11 +8,12 @@ import { FALLBACK_LOCATION } from "@/lib/constants"
 import type { LocationStatus } from "@/components/NearestStopCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Users, Ghost, RefreshCw, Plus } from "lucide-react"
+import { MapPin, Users, Ghost, RefreshCw, Plus, ChevronDown, ChevronUp } from "lucide-react"
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
 import { AboutOverlay } from "@/components/AboutOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
 import { NearestStopCard } from "@/components/NearestStopCard"
+import { WalkVsBusCard } from "@/components/WalkVsBusCard"
 
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
@@ -49,6 +50,7 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDay())
   const [effectiveLocation, setEffectiveLocation] = useState<[number, number]>(FALLBACK_LOCATION)
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("loading")
+  const [walkVsBusOpen, setWalkVsBusOpen] = useState(true)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -207,7 +209,18 @@ export default function Home() {
   return (
     <div className="flex h-screen flex-col bg-[#F7F7F7]">
       <header className="relative flex h-16 shrink-0 items-center justify-center bg-[#C5050C] px-6 text-white shadow-md">
-        <div className="absolute right-6">
+        <div className="absolute right-6 flex items-center gap-2">
+          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/95 backdrop-blur-sm">
+            Route 80
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setOverlayOpen(true)}
+            className="text-white hover:bg-white/20 font-medium"
+          >
+            Schedule
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -249,6 +262,36 @@ export default function Home() {
 
           {/* Nearest stop & bus (from current or default location) */}
           <NearestStopCard effectiveLocation={effectiveLocation} locationStatus={locationStatus} />
+
+          {/* Left dashboard: Walk vs bus (dropdown) */}
+          <div className="mb-4 rounded-xl border border-gray-200 bg-white">
+            <button
+              type="button"
+              onClick={() => setWalkVsBusOpen((o) => !o)}
+              className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold uppercase tracking-wider text-[#C5050C] hover:bg-gray-50"
+            >
+              Walk vs bus
+              {walkVsBusOpen ? (
+                <ChevronUp className="h-4 w-4 shrink-0" />
+              ) : (
+                <ChevronDown className="h-4 w-4 shrink-0" />
+              )}
+            </button>
+            {walkVsBusOpen && (
+              <div className="border-t border-gray-200 px-4 pb-4 pt-3">
+                {next3Classes[0]?.location?.trim() ? (
+                  <WalkVsBusCard
+                    effectiveLocation={effectiveLocation}
+                    nextItem={next3Classes[0]}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Add your next class with a location (e.g. Van Vleck Hall) to see whether to walk or take the bus and arrival times for both.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* 2) Next 3 class cards */}
           <div className="mb-4 flex flex-col gap-3">
