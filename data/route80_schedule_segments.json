@@ -1,0 +1,19 @@
+{
+  "timepoint_to_stop_ids": {
+    "Memorial Union": ["1"],
+    "Observatory at Elm": ["655", "877"],
+    "University Bay at Lot 60": ["600"],
+    "Eagle Heights at Brown Shelter": ["614"],
+    "Marsh at Lot 76": ["612"],
+    "Randall at Engineering": ["918"]
+  },
+  "segments": [
+    { "from_timepoint": "Memorial Union", "to_timepoint": "Observatory at Elm", "minutes": 2 },
+    { "from_timepoint": "Observatory at Elm", "to_timepoint": "University Bay at Lot 60", "minutes": 4 },
+    { "from_timepoint": "University Bay at Lot 60", "to_timepoint": "Eagle Heights at Brown Shelter", "minutes": 6 },
+    { "from_timepoint": "Eagle Heights at Brown Shelter", "to_timepoint": "Marsh at Lot 76", "minutes": 3 },
+    { "from_timepoint": "Marsh at Lot 76", "to_timepoint": "Observatory at Elm", "minutes": 5 },
+    { "from_timepoint": "Observatory at Elm", "to_timepoint": "Randall at Engineering", "minutes": 4 },
+    { "from_timepoint": "Randall at Engineering", "to_timepoint": "Memorial Union", "minutes": 3 }
+  ]
+}

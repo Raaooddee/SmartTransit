@@ -1,0 +1,342 @@
+[
+  {
+    "id": "80_uw_hospital_east",
+    "label": "80 UW Hospital Eastbound",
+    "direction": "eastbound",
+    "destination": "Memorial Union",
+    "stop_sequence": [
+      {
+        "stop_id": "612",
+        "stop_name": "Marsh at Lot 76"
+      },
+      {
+        "stop_id": "709",
+        "stop_name": "Highland at Marsh"
+      },
+      {
+        "stop_id": "616",
+        "stop_name": "Observatory at Highland"
+      },
+      {
+        "stop_id": "595",
+        "stop_name": "Observatory at Walnut"
+      },
+      {
+        "stop_id": "692",
+        "stop_name": "Observatory at Colwood"
+      },
+      {
+        "stop_id": "655",
+        "stop_name": "Observatory at Elm"
+      },
+      {
+        "stop_id": "634",
+        "stop_name": "Observatory at Babcock"
+      },
+      {
+        "stop_id": "878",
+        "stop_name": "Babcock at Linden"
+      },
+      {
+        "stop_id": "1314",
+        "stop_name": "Linden at Henry"
+      },
+      {
+        "stop_id": "1058",
+        "stop_name": "Linden at N Charter"
+      },
+      {
+        "stop_id": "1651",
+        "stop_name": "N Charter at University"
+      },
+      {
+        "stop_id": "918",
+        "stop_name": "N Randall at Engineering"
+      },
+      {
+        "stop_id": "1223",
+        "stop_name": "W Dayton at N Orchard"
+      },
+      {
+        "stop_id": "1341",
+        "stop_name": "W Dayton at N Mills"
+      },
+      {
+        "stop_id": "1774",
+        "stop_name": "W Dayton at N Park"
+      },
+      {
+        "stop_id": "973",
+        "stop_name": "N Lake at W Johnson"
+      },
+      {
+        "stop_id": "1816",
+        "stop_name": "N Lake at University"
+      },
+      {
+        "stop_id": "1190",
+        "stop_name": "N Lake at Langdon"
+      },
+      {
+        "stop_id": "1",
+        "stop_name": "Langdon at N Park"
+      }
+    ]
+  },
+  {
+    "id": "80_uw_hospital_west",
+    "label": "80 UW Hospital Westbound",
+    "direction": "westbound",
+    "destination": "UW Hospital / Marsh",
+    "stop_sequence": [
+      {
+        "stop_id": "1",
+        "stop_name": "Langdon at N Park"
+      },
+      {
+        "stop_id": "1339",
+        "stop_name": "Observatory at Bascom"
+      },
+      {
+        "stop_id": "1246",
+        "stop_name": "Observatory at N Charter"
+      },
+      {
+        "stop_id": "1185",
+        "stop_name": "Linden at N Charter"
+      },
+      {
+        "stop_id": "555",
+        "stop_name": "Linden at Henry"
+      },
+      {
+        "stop_id": "1262",
+        "stop_name": "Linden at Babcock"
+      },
+      {
+        "stop_id": "882",
+        "stop_name": "Observatory at Babcock"
+      },
+      {
+        "stop_id": "877",
+        "stop_name": "Observatory at Elm"
+      },
+      {
+        "stop_id": "741",
+        "stop_name": "Observatory at Colwood"
+      },
+      {
+        "stop_id": "607",
+        "stop_name": "Walnut at Observatory"
+      },
+      {
+        "stop_id": "679",
+        "stop_name": "Marsh at Lot 60"
+      },
+      {
+        "stop_id": "612",
+        "stop_name": "Marsh at Lot 76"
+      }
+    ]
+  },
+  {
+    "id": "80_eagle_east",
+    "label": "80 Eagle Heights Eastbound",
+    "direction": "eastbound",
+    "destination": "Memorial Union",
+    "stop_sequence": [
+      {
+        "stop_id": "608",
+        "stop_name": "Eagle Heights at Lot M"
+      },
+      {
+        "stop_id": "603",
+        "stop_name": "Lake Mendota at Lot N"
+      },
+      {
+        "stop_id": "609",
+        "stop_name": "Lake Mendota at Lot P"
+      },
+      {
+        "stop_id": "611",
+        "stop_name": "Lake Mendota at Lot Q"
+      },
+      {
+        "stop_id": "596",
+        "stop_name": "Lake Mendota at Lot R"
+      },
+      {
+        "stop_id": "602",
+        "stop_name": "Lake Mendota at Eagle Heights"
+      },
+      {
+        "stop_id": "605",
+        "stop_name": "Lake Mendota at University Bay"
+      },
+      {
+        "stop_id": "851",
+        "stop_name": "University Bay at Picnic Point"
+      },
+      {
+        "stop_id": "606",
+        "stop_name": "University Bay at Lot 76"
+      },
+      {
+        "stop_id": "612",
+        "stop_name": "Marsh at Lot 76"
+      },
+      {
+        "stop_id": "709",
+        "stop_name": "Highland at Marsh"
+      },
+      {
+        "stop_id": "616",
+        "stop_name": "Observatory at Highland"
+      },
+      {
+        "stop_id": "595",
+        "stop_name": "Observatory at Walnut"
+      },
+      {
+        "stop_id": "692",
+        "stop_name": "Observatory at Colwood"
+      },
+      {
+        "stop_id": "655",
+        "stop_name": "Observatory at Elm"
+      },
+      {
+        "stop_id": "634",
+        "stop_name": "Observatory at Babcock"
+      },
+      {
+        "stop_id": "878",
+        "stop_name": "Babcock at Linden"
+      },
+      {
+        "stop_id": "1314",
+        "stop_name": "Linden at Henry"
+      },
+      {
+        "stop_id": "1058",
+        "stop_name": "Linden at N Charter"
+      },
+      {
+        "stop_id": "1651",
+        "stop_name": "N Charter at University"
+      },
+      {
+        "stop_id": "918",
+        "stop_name": "N Randall at Engineering"
+      },
+      {
+        "stop_id": "1223",
+        "stop_name": "W Dayton at N Orchard"
+      },
+      {
+        "stop_id": "1341",
+        "stop_name": "W Dayton at N Mills"
+      },
+      {
+        "stop_id": "1774",
+        "stop_name": "W Dayton at N Park"
+      },
+      {
+        "stop_id": "973",
+        "stop_name": "N Lake at W Johnson"
+      },
+      {
+        "stop_id": "1816",
+        "stop_name": "N Lake at University"
+      },
+      {
+        "stop_id": "1190",
+        "stop_name": "N Lake at Langdon"
+      },
+      {
+        "stop_id": "1",
+        "stop_name": "Langdon at N Park"
+      }
+    ]
+  },
+  {
+    "id": "80_eagle_west",
+    "label": "80 Eagle Heights Westbound",
+    "direction": "westbound",
+    "destination": "Eagle Heights",
+    "stop_sequence": [
+      {
+        "stop_id": "1",
+        "stop_name": "Langdon at N Park"
+      },
+      {
+        "stop_id": "1339",
+        "stop_name": "Observatory at Bascom"
+      },
+      {
+        "stop_id": "1246",
+        "stop_name": "Observatory at N Charter"
+      },
+      {
+        "stop_id": "1185",
+        "stop_name": "Linden at N Charter"
+      },
+      {
+        "stop_id": "555",
+        "stop_name": "Linden at Henry"
+      },
+      {
+        "stop_id": "1262",
+        "stop_name": "Linden at Babcock"
+      },
+      {
+        "stop_id": "882",
+        "stop_name": "Observatory at Babcock"
+      },
+      {
+        "stop_id": "877",
+        "stop_name": "Observatory at Elm"
+      },
+      {
+        "stop_id": "741",
+        "stop_name": "Observatory at Colwood"
+      },
+      {
+        "stop_id": "615",
+        "stop_name": "Observatory at Walnut"
+      },
+      {
+        "stop_id": "628",
+        "stop_name": "Highland at Observatory"
+      },
+      {
+        "stop_id": "598",
+        "stop_name": "Marsh at Highland"
+      },
+      {
+        "stop_id": "600",
+        "stop_name": "University Bay at Lot 60"
+      },
+      {
+        "stop_id": "866",
+        "stop_name": "University Bay at Picnic Point"
+      },
+      {
+        "stop_id": "604",
+        "stop_name": "Lake Mendota at University Bay"
+      },
+      {
+        "stop_id": "597",
+        "stop_name": "Eagle Heights at Lot E"
+      },
+      {
+        "stop_id": "599",
+        "stop_name": "Eagle Heights at Lot F"
+      },
+      {
+        "stop_id": "614",
+        "stop_name": "Eagle Heights at Shelter"
+      }
+    ]
+  }
+]

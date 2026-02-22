@@ -45,7 +45,21 @@ function nearestStop(lat: number, lon: number): RouteStop | null {
   return best
 }
 
-type Prediction = { vid?: string; prdctdn?: string; stpnm?: string }
+type Prediction = {
+  vid?: string
+  prdctdn?: string
+  stpnm?: string
+  des?: string
+  rtdir?: string
+  estimated?: boolean
+  stops_between?: number
+}
+
+function directionLabel(p: Prediction): string {
+  if (p.des && String(p.des).trim()) return String(p.des).trim()
+  if (p.rtdir && String(p.rtdir).trim()) return String(p.rtdir).trim()
+  return ""
+}
 
 type Props = {
   effectiveLocation: [number, number]
@@ -125,8 +139,24 @@ export function NearestStopCard({ effectiveLocation, locationStatus }: Props) {
                 <span>
                   {firstBus?.vid != null && firstBus.prdctdn != null ? (
                     <>
-                      <strong>Nearest bus:</strong> Bus {firstBus.vid} in{" "}
-                      {firstBus.prdctdn} min
+                      <strong>Bus predicted at this stop:</strong> Bus {firstBus.vid}{" "}
+                      in {firstBus.prdctdn} min
+                      {firstBus.stops_between != null && firstBus.stops_between > 0 && (
+                        <span className="text-gray-600">
+                          {" "}
+                          ({firstBus.stops_between} stop
+                          {firstBus.stops_between === 1 ? "" : "s"})
+                        </span>
+                      )}
+                      {firstBus.estimated && (
+                        <span className="text-amber-700"> (estimated)</span>
+                      )}
+                      {directionLabel(firstBus) && (
+                        <span className="text-gray-600">
+                          {" "}
+                          — toward {directionLabel(firstBus)}
+                        </span>
+                      )}
                     </>
                   ) : predictionsError ? (
                     "Could not load bus predictions."
