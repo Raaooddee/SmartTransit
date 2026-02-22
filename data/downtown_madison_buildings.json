@@ -1,0 +1,667 @@
+[
+  {
+    "name": "10 East Doty at Block89",
+    "lat": 43.0738631,
+    "lon": -89.3816193
+  },
+  {
+    "name": "25 West Main Street",
+    "lat": 43.0728809,
+    "lon": -89.3835333
+  },
+  {
+    "name": "306 West Main",
+    "lat": 43.0717146,
+    "lon": -89.3865996
+  },
+  {
+    "name": "33 East Main at Block89",
+    "lat": 43.0742515,
+    "lon": -89.3819814
+  },
+  {
+    "name": "44 East Mifflin",
+    "lat": 43.0764223,
+    "lon": -89.3845539
+  },
+  {
+    "name": "ABC for Health",
+    "lat": 43.0707224,
+    "lon": -89.3918581
+  },
+  {
+    "name": "AC Hotel Madison Downtown",
+    "lat": 43.0765412,
+    "lon": -89.3822811
+  },
+  {
+    "name": "Adria",
+    "lat": 43.0703413,
+    "lon": -89.3836137
+  },
+  {
+    "name": "Ambassador West Apartments",
+    "lat": 43.0716611,
+    "lon": -89.3913578
+  },
+  {
+    "name": "American Exchange Block",
+    "lat": 43.0758863,
+    "lon": -89.3829128
+  },
+  {
+    "name": "Avenir Apartments",
+    "lat": 43.0701294,
+    "lon": -89.3914578
+  },
+  {
+    "name": "Barracuda Condos",
+    "lat": 43.0708544,
+    "lon": -89.3845886
+  },
+  {
+    "name": "Bartell Theatre",
+    "lat": 43.0765157,
+    "lon": -89.3833376
+  },
+  {
+    "name": "Beecroft House",
+    "lat": 43.0775332,
+    "lon": -89.3905539
+  },
+  {
+    "name": "Best Western Premier Park Hotel",
+    "lat": 43.0729792,
+    "lon": -89.384826
+  },
+  {
+    "name": "Bethel Lutheran Church",
+    "lat": 43.0768234,
+    "lon": -89.3877777
+  },
+  {
+    "name": "Block 100",
+    "lat": 43.0745208,
+    "lon": -89.3875298
+  },
+  {
+    "name": "Burrows Block at Block89",
+    "lat": 43.0740214,
+    "lon": -89.3816859
+  },
+  {
+    "name": "Butler Plaza",
+    "lat": 43.0771507,
+    "lon": -89.3813581
+  },
+  {
+    "name": "Calimar Apartments",
+    "lat": 43.078133,
+    "lon": -89.3874706
+  },
+  {
+    "name": "Capitol Centre Apartments",
+    "lat": 43.0730623,
+    "lon": -89.389714
+  },
+  {
+    "name": "Capitol Centre Market",
+    "lat": 43.0727958,
+    "lon": -89.3902364
+  },
+  {
+    "name": "Capitol Chop House",
+    "lat": 43.0728718,
+    "lon": -89.3804409
+  },
+  {
+    "name": "Capitol Hill Apartments",
+    "lat": 43.0767067,
+    "lon": -89.3832059
+  },
+  {
+    "name": "Capitol Lakes",
+    "lat": 43.0707714,
+    "lon": -89.3864617
+  },
+  {
+    "name": "Capitol Parkside Condos",
+    "lat": 43.0768041,
+    "lon": -89.38382
+  },
+  {
+    "name": "Capitol Point Condos",
+    "lat": 43.0771231,
+    "lon": -89.3836959
+  },
+  {
+    "name": "Capitol Square North Garage",
+    "lat": 43.0776184,
+    "lon": -89.3831886
+  },
+  {
+    "name": "Capitol Square Station (EB)",
+    "lat": 43.0735169,
+    "lon": -89.3835719
+  },
+  {
+    "name": "Capitol Square Station (WB)",
+    "lat": 43.0757915,
+    "lon": -89.3849094
+  },
+  {
+    "name": "Capitol West",
+    "lat": 43.0721429,
+    "lon": -89.3871448
+  },
+  {
+    "name": "Capitol West Townhouses",
+    "lat": 43.0711108,
+    "lon": -89.3882265
+  },
+  {
+    "name": "Central Library",
+    "lat": 43.0736214,
+    "lon": -89.3875186
+  },
+  {
+    "name": "Chi Omega Sorority",
+    "lat": 43.0774654,
+    "lon": -89.3910072
+  },
+  {
+    "name": "Churchill Building",
+    "lat": 43.0741519,
+    "lon": -89.3861406
+  },
+  {
+    "name": "City Place Apartments",
+    "lat": 43.0701034,
+    "lon": -89.3889379
+  },
+  {
+    "name": "City-County Building",
+    "lat": 43.072395,
+    "lon": -89.3824557
+  },
+  {
+    "name": "Commercial Bank building",
+    "lat": 43.0749436,
+    "lon": -89.3869796
+  },
+  {
+    "name": "Dane County Courthouse",
+    "lat": 43.0711937,
+    "lon": -89.3837988
+  },
+  {
+    "name": "Dane County Public Safety Building",
+    "lat": 43.0718162,
+    "lon": -89.3835619
+  },
+  {
+    "name": "Daniel K. & Mary Jane Tenney Residence",
+    "lat": 43.0770071,
+    "lon": -89.3889962
+  },
+  {
+    "name": "David Johnson House",
+    "lat": 43.0773497,
+    "lon": -89.3895581
+  },
+  {
+    "name": "Delta Delta Delta Sorority",
+    "lat": 43.0777633,
+    "lon": -89.3916288
+  },
+  {
+    "name": "Delta Gamma Sorority",
+    "lat": 43.0776416,
+    "lon": -89.3907703
+  },
+  {
+    "name": "Domain",
+    "lat": 43.0728316,
+    "lon": -89.3919331
+  },
+  {
+    "name": "Edmund J. & Ida Hart Residence",
+    "lat": 43.0776186,
+    "lon": -89.3885155
+  },
+  {
+    "name": "Edward F. Riley Rental House",
+    "lat": 43.0774744,
+    "lon": -89.3893642
+  },
+  {
+    "name": "Elizabeth S. & Dr. Reginald H. Jackson Residence",
+    "lat": 43.0772561,
+    "lon": -89.3892918
+  },
+  {
+    "name": "Embassy Suites",
+    "lat": 43.073853,
+    "lon": -89.3803765
+  },
+  {
+    "name": "First United Methodist Church",
+    "lat": 43.0769524,
+    "lon": -89.3863156
+  },
+  {
+    "name": "Freethought Hall",
+    "lat": 43.0727473,
+    "lon": -89.3876118
+  },
+  {
+    "name": "Grace Episcopal Church",
+    "lat": 43.0739138,
+    "lon": -89.3859868
+  },
+  {
+    "name": "Hamilton Plaza Apartments",
+    "lat": 43.0778957,
+    "lon": -89.3844173
+  },
+  {
+    "name": "Hilton Madison Monona Terrace",
+    "lat": 43.0726211,
+    "lon": -89.3803357
+  },
+  {
+    "name": "Holy Redeemer Catholic Church",
+    "lat": 43.0756315,
+    "lon": -89.3893652
+  },
+  {
+    "name": "Hotel Lorraine",
+    "lat": 43.0732336,
+    "lon": -89.385587
+  },
+  {
+    "name": "Hovde Building",
+    "lat": 43.0736375,
+    "lon": -89.3863914
+  },
+  {
+    "name": "Hyatt Place",
+    "lat": 43.0717002,
+    "lon": -89.387599
+  },
+  {
+    "name": "International Co-Op",
+    "lat": 43.0766817,
+    "lon": -89.3913784
+  },
+  {
+    "name": "Isaiah Weaver Residence",
+    "lat": 43.0775514,
+    "lon": -89.3892341
+  },
+  {
+    "name": "J.W. Hobbins Rental House",
+    "lat": 43.0770094,
+    "lon": -89.3908848
+  },
+  {
+    "name": "Johnson Bank",
+    "lat": 43.0735678,
+    "lon": -89.3820197
+  },
+  {
+    "name": "Keller Building",
+    "lat": 43.0705999,
+    "lon": -89.390645
+  },
+  {
+    "name": "King St. Station",
+    "lat": 43.0744504,
+    "lon": -89.380744
+  },
+  {
+    "name": "Lamp House",
+    "lat": 43.0769727,
+    "lon": -89.3824661
+  },
+  {
+    "name": "Lewis E. & Ella Stevens Residence",
+    "lat": 43.0768984,
+    "lon": -89.3910044
+  },
+  {
+    "name": "Lumen House",
+    "lat": 43.0753741,
+    "lon": -89.3896762
+  },
+  {
+    "name": "Madison Building Inspection",
+    "lat": 43.072163,
+    "lon": -89.3845
+  },
+  {
+    "name": "Madison Children's Museum",
+    "lat": 43.0768154,
+    "lon": -89.3844709
+  },
+  {
+    "name": "Madison Club",
+    "lat": 43.0724527,
+    "lon": -89.3806985
+  },
+  {
+    "name": "Madison Concourse Hotel",
+    "lat": 43.075571,
+    "lon": -89.3865174
+  },
+  {
+    "name": "Madison Fire Station No. 1",
+    "lat": 43.0737501,
+    "lon": -89.390176
+  },
+  {
+    "name": "Madison Masonic Center",
+    "lat": 43.0773835,
+    "lon": -89.3867829
+  },
+  {
+    "name": "Madison Municipal Building",
+    "lat": 43.0731865,
+    "lon": -89.3813268
+  },
+  {
+    "name": "Majestic",
+    "lat": 43.0744152,
+    "lon": -89.3808535
+  },
+  {
+    "name": "Major James R. & Lois Mears Residence",
+    "lat": 43.0770588,
+    "lon": -89.389922
+  },
+  {
+    "name": "Mall Concourse/State Street Maintenance",
+    "lat": 43.0715661,
+    "lon": -89.3848942
+  },
+  {
+    "name": "Manchester Place",
+    "lat": 43.0760068,
+    "lon": -89.3852063
+  },
+  {
+    "name": "Metropolitan Place",
+    "lat": 43.0721781,
+    "lon": -89.3884075
+  },
+  {
+    "name": "Mifflander Apartments",
+    "lat": 43.0712728,
+    "lon": -89.3907932
+  },
+  {
+    "name": "Mrs. S.H. Carpenter Rental House",
+    "lat": 43.0776921,
+    "lon": -89.3890454
+  },
+  {
+    "name": "New Wine Co-op",
+    "lat": 43.0760192,
+    "lon": -89.389605
+  },
+  {
+    "name": "Noodles & Company",
+    "lat": 43.0749443,
+    "lon": -89.3894945
+  },
+  {
+    "name": "NoVo Apartments",
+    "lat": 43.0734851,
+    "lon": -89.3809035
+  },
+  {
+    "name": "ōLiv Madison",
+    "lat": 43.0742603,
+    "lon": -89.3916238
+  },
+  {
+    "name": "One East Main at Block89",
+    "lat": 43.073847,
+    "lon": -89.3823536
+  },
+  {
+    "name": "OPN Architects",
+    "lat": 43.0737912,
+    "lon": -89.3917309
+  },
+  {
+    "name": "Orpheum Theatre",
+    "lat": 43.0751877,
+    "lon": -89.3887148
+  },
+  {
+    "name": "Ovation 309",
+    "lat": 43.0741534,
+    "lon": -89.3901312
+  },
+  {
+    "name": "Overture Center for the Arts",
+    "lat": 43.0741474,
+    "lon": -89.3885839
+  },
+  {
+    "name": "Overture Center Ramp",
+    "lat": 43.0733465,
+    "lon": -89.3893212
+  },
+  {
+    "name": "Paras Building",
+    "lat": 43.0750092,
+    "lon": -89.3881625
+  },
+  {
+    "name": "Quisling Terrace",
+    "lat": 43.0774167,
+    "lon": -89.3885169
+  },
+  {
+    "name": "Ragstock",
+    "lat": 43.0746109,
+    "lon": -89.3911732
+  },
+  {
+    "name": "Red Rock Saloon",
+    "lat": 43.0751282,
+    "lon": -89.3917589
+  },
+  {
+    "name": "Red Square Flowers",
+    "lat": 43.0746161,
+    "lon": -89.3878372
+  },
+  {
+    "name": "Robert W. Kastenmeier Federal Courthouse",
+    "lat": 43.073729,
+    "lon": -89.3890921
+  },
+  {
+    "name": "Rochdale International Co-op",
+    "lat": 43.0760906,
+    "lon": -89.3903359
+  },
+  {
+    "name": "Sheelin Apartments",
+    "lat": 43.071972,
+    "lon": -89.3908981
+  },
+  {
+    "name": "Sigma Pi Fraternity",
+    "lat": 43.0768514,
+    "lon": -89.391905
+  },
+  {
+    "name": "Skylight Apartments",
+    "lat": 43.0745378,
+    "lon": -89.3907582
+  },
+  {
+    "name": "Soap Opera",
+    "lat": 43.0746458,
+    "lon": -89.3910019
+  },
+  {
+    "name": "St. John's Lutheran Church",
+    "lat": 43.0774572,
+    "lon": -89.3808614
+  },
+  {
+    "name": "State Street (EB)",
+    "lat": 43.0747401,
+    "lon": -89.3892419
+  },
+  {
+    "name": "State Street (WB)",
+    "lat": 43.0748539,
+    "lon": -89.3911959
+  },
+  {
+    "name": "State Street Capitol Ramp",
+    "lat": 43.0754518,
+    "lon": -89.3880877
+  },
+  {
+    "name": "Steensland House",
+    "lat": 43.0769507,
+    "lon": -89.3882654
+  },
+  {
+    "name": "Stop N Shop",
+    "lat": 43.0780092,
+    "lon": -89.3820908
+  },
+  {
+    "name": "Suhr Building",
+    "lat": 43.0748239,
+    "lon": -89.3814582
+  },
+  {
+    "name": "Tenney Plaza",
+    "lat": 43.0750467,
+    "lon": -89.381773
+  },
+  {
+    "name": "Tenney Plaza Ramp",
+    "lat": 43.0752972,
+    "lon": -89.381495
+  },
+  {
+    "name": "The Baskerville",
+    "lat": 43.0721333,
+    "lon": -89.384
+  },
+  {
+    "name": "The Continental",
+    "lat": 43.0779011,
+    "lon": -89.3802928
+  },
+  {
+    "name": "The Gilman Apartments",
+    "lat": 43.0769471,
+    "lon": -89.3900919
+  },
+  {
+    "name": "The Jackman Building",
+    "lat": 43.0726655,
+    "lon": -89.3839989
+  },
+  {
+    "name": "The Lurican",
+    "lat": 43.0722789,
+    "lon": -89.3912228
+  },
+  {
+    "name": "The Old Fashioned",
+    "lat": 43.076292,
+    "lon": -89.3835622
+  },
+  {
+    "name": "The Pressman",
+    "lat": 43.0723904,
+    "lon": -89.3838145
+  },
+  {
+    "name": "The Rigby Pub",
+    "lat": 43.0749848,
+    "lon": -89.3810853
+  },
+  {
+    "name": "Time Square Apartments",
+    "lat": 43.0728133,
+    "lon": -89.391362
+  },
+  {
+    "name": "Tommy G Thompson Center",
+    "lat": 43.0727423,
+    "lon": -89.3861688
+  },
+  {
+    "name": "U.S. Bank Plaza",
+    "lat": 43.0754874,
+    "lon": -89.3821185
+  },
+  {
+    "name": "Van Slyke House",
+    "lat": 43.0773979,
+    "lon": -89.3903554
+  },
+  {
+    "name": "Washington Plaza Apartments",
+    "lat": 43.0704725,
+    "lon": -89.3893362
+  },
+  {
+    "name": "Willett S. Main Rental Duplex",
+    "lat": 43.0778945,
+    "lon": -89.3895092
+  },
+  {
+    "name": "Willett S. Main Rental house",
+    "lat": 43.077793,
+    "lon": -89.3896222
+  },
+  {
+    "name": "Wisconsin Department of Children And Familes",
+    "lat": 43.0760079,
+    "lon": -89.3810886
+  },
+  {
+    "name": "Wisconsin Department of Health Services",
+    "lat": 43.0718658,
+    "lon": -89.3816452
+  },
+  {
+    "name": "Wisconsin Department of Justice",
+    "lat": 43.0730952,
+    "lon": -89.383082
+  },
+  {
+    "name": "Wisconsin Department of Natural Resources",
+    "lat": 43.0753787,
+    "lon": -89.3802513
+  },
+  {
+    "name": "Wisconsin State Capitol",
+    "lat": 43.0746915,
+    "lon": -89.3841656
+  },
+  {
+    "name": "Wisconsin Veterans Museum",
+    "lat": 43.0750903,
+    "lon": -89.3864569
+  },
+  {
+    "name": "YWCA Madison",
+    "lat": 43.0764166,
+    "lon": -89.3837291
+  }
+]
