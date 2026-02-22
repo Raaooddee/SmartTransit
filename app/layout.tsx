@@ -17,6 +17,10 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: "SmartTransit | Bus Tracking",
   description: "Reliability-first bus planning for UW–Madison Route 80",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

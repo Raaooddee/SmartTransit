@@ -8,16 +8,26 @@ type CrowdRisk = "low" | "medium" | "high"
 
 const POLL_MS = 60 * 1000 // every minute
 
+export type MapDestination = {
+  name: string
+  location: string
+  coords: { lat: number; lon: number }
+}
+
 type BusMapProps = {
   effectiveLocation?: [number, number]
   locationStatus?: LocationStatus
   onRequestLocation?: () => void
+  destination?: MapDestination | null
+  walkingRoute?: [number, number][] | null
 }
 
 export function BusMap({
   effectiveLocation,
   locationStatus,
   onRequestLocation,
+  destination,
+  walkingRoute,
 }: BusMapProps = {}) {
   const [vehicles, setVehicles] = useState<BusVehicle[]>([])
   const [crowdRisk, setCrowdRisk] = useState<CrowdRisk | null>(null)
@@ -28,6 +38,8 @@ export function BusMap({
       effectiveLocation?: [number, number]
       locationStatus?: LocationStatus
       onRequestLocation?: () => void
+      destination?: MapDestination | null
+      walkingRoute?: [number, number][] | null
     }> | null
   >(null)
 
@@ -69,6 +81,8 @@ export function BusMap({
       effectiveLocation={effectiveLocation}
       locationStatus={locationStatus}
       onRequestLocation={onRequestLocation}
+      destination={destination}
+      walkingRoute={walkingRoute}
     />
   )
 }

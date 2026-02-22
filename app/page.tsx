@@ -8,13 +8,12 @@ import { FALLBACK_LOCATION } from "@/lib/constants"
 import type { LocationStatus } from "@/components/NearestStopCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Users, Ghost, RefreshCw, Plus, ChevronDown, ChevronUp } from "lucide-react"
+import { MapPin, Users, Ghost, RefreshCw, Plus, ChevronDown, ChevronUp, Footprints } from "lucide-react"
 import { ImportScheduleOverlay } from "@/components/ImportScheduleOverlay"
 import { AboutOverlay } from "@/components/AboutOverlay"
 import { SmartTransitLogo } from "@/components/SmartTransitLogo"
 import { NearestStopCard } from "@/components/NearestStopCard"
 import { WalkVsBusCard } from "@/components/WalkVsBusCard"
-
 const BusMap = dynamic(() => import("@/components/BusMap").then((m) => m.BusMap), { ssr: false })
 
 const SCHEDULE_STORAGE_KEY = "smarttransit-schedule"
@@ -51,6 +50,9 @@ export default function Home() {
   const [effectiveLocation, setEffectiveLocation] = useState<[number, number]>(FALLBACK_LOCATION)
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("loading")
   const [walkVsBusOpen, setWalkVsBusOpen] = useState(true)
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lon: number } | null>(null)
+  const [showWalkingRoute, setShowWalkingRoute] = useState(false)
+  const [walkingRoutePath, setWalkingRoutePath] = useState<[number, number][] | null>(null)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -124,10 +126,6 @@ export default function Home() {
     localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(schedule))
   }, [schedule])
 
-  const handleImportSchedule = (classes: ScheduleClass[]) => {
-    setSchedule(classes)
-  }
-
   const now = new Date()
   const today = now.getDay()
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
@@ -135,7 +133,64 @@ export default function Home() {
     .filter((c) => c.days.includes(today))
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
   const upcomingToday = todayClasses.filter((c) => timeToMinutes(c.endTime) > currentMinutes)
+  const nextClassWithLocation = upcomingToday.find((c) => c.location?.trim()) ?? null
+  const nextDestLocation = nextClassWithLocation?.location?.trim() ?? null
+
+  useEffect(() => {
+    if (!nextDestLocation) {
+      setDestinationCoords(null)
+      return
+    }
+    fetch(`/api/geocode?q=${encodeURIComponent(nextDestLocation)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.ok && typeof d.lat === "number" && typeof d.lon === "number") {
+          setDestinationCoords({ lat: d.lat, lon: d.lon })
+        } else {
+          setDestinationCoords(null)
+        }
+      })
+      .catch(() => setDestinationCoords(null))
+  }, [nextDestLocation])
+
+  useEffect(() => {
+    if (!showWalkingRoute || !destinationCoords) {
+      setWalkingRoutePath(null)
+      return
+    }
+    const [fromLat, fromLon] = effectiveLocation
+    const { lat: toLat, lon: toLon } = destinationCoords
+    const params = new URLSearchParams({
+      fromLat: String(fromLat),
+      fromLon: String(fromLon),
+      toLat: String(toLat),
+      toLon: String(toLon),
+    })
+    fetch(`/api/walking-route?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.ok && Array.isArray(d.path) && d.path.length > 0) {
+          setWalkingRoutePath(d.path)
+        } else {
+          setWalkingRoutePath(null)
+        }
+      })
+      .catch(() => setWalkingRoutePath(null))
+  }, [showWalkingRoute, destinationCoords?.lat, destinationCoords?.lon, effectiveLocation[0], effectiveLocation[1]])
+
+  const handleImportSchedule = (classes: ScheduleClass[]) => {
+    setSchedule(classes)
+  }
+
   const next3Classes = upcomingToday.slice(0, 3)
+  const nextDestination =
+    destinationCoords && nextClassWithLocation
+      ? {
+          name: nextClassWithLocation.name,
+          location: nextClassWithLocation.location.trim(),
+          coords: destinationCoords,
+        }
+      : null
   const itemsForSelectedDay = schedule
     .filter((c) => c.days.includes(selectedDay))
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
@@ -279,11 +334,25 @@ export default function Home() {
             </button>
             {walkVsBusOpen && (
               <div className="border-t border-gray-200 px-4 pb-4 pt-3">
-                {next3Classes[0]?.location?.trim() ? (
-                  <WalkVsBusCard
-                    effectiveLocation={effectiveLocation}
-                    nextItem={next3Classes[0]}
-                  />
+                {nextClassWithLocation ? (
+                  <>
+                    <WalkVsBusCard
+                      effectiveLocation={effectiveLocation}
+                      nextItem={nextClassWithLocation}
+                    />
+                    {destinationCoords && (
+                      <Button
+                        type="button"
+                        variant={showWalkingRoute ? "secondary" : "outline"}
+                        size="sm"
+                        className="mt-2 w-full gap-2 border-[#C5050C] text-[#C5050C] hover:bg-[#C5050C]/10 hover:text-[#9B0000]"
+                        onClick={() => setShowWalkingRoute((v) => !v)}
+                      >
+                        <Footprints className="h-4 w-4 shrink-0" />
+                        {showWalkingRoute ? "Hide walking route" : "View walking route on map"}
+                      </Button>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-gray-500">
                     Add your next class with a location (e.g. Van Vleck Hall) to see whether to walk or take the bus and arrival times for both.
@@ -423,6 +492,8 @@ export default function Home() {
             effectiveLocation={effectiveLocation}
             locationStatus={locationStatus}
             onRequestLocation={handleRequestLocation}
+            destination={nextDestination}
+            walkingRoute={showWalkingRoute ? walkingRoutePath : null}
           />
         </main>
       </div>

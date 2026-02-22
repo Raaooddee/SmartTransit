@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MapContainer, TileLayer, Marker, Tooltip, CircleMarker, useMap } from "react-leaflet"
+import { MapContainer, TileLayer, Marker, Tooltip, CircleMarker, Polyline, useMap } from "react-leaflet"
 import L from "leaflet"
 import type { BusVehicle } from "@/lib/types"
 import route80Stops from "@/data/route80_stops.json"
@@ -53,6 +53,12 @@ const STOP_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36
   <circle cx="12" cy="12" r="4" fill="#fff"/>
 </svg>`
 
+const DEST_PIN_SIZE = 28
+const DEST_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="${DEST_PIN_SIZE}" height="${DEST_PIN_SIZE * 1.5}" fill="none">
+  <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="#C5050C" stroke="#fff" stroke-width="1.8"/>
+  <circle cx="12" cy="12" r="5" fill="#fff"/>
+</svg>`
+
 function stopPinIcon(): L.DivIcon {
   return L.divIcon({
     className: "stop-pin-icon",
@@ -63,6 +69,19 @@ function stopPinIcon(): L.DivIcon {
     ">${STOP_PIN_SVG}</div>`,
     iconSize: [STOP_PIN_SIZE, STOP_PIN_SIZE * 1.5],
     iconAnchor: [STOP_PIN_SIZE / 2, STOP_PIN_SIZE * 1.5],
+  })
+}
+
+function destPinIcon(): L.DivIcon {
+  return L.divIcon({
+    className: "dest-pin-icon",
+    html: `<div style="
+      width:${DEST_PIN_SIZE}px;height:${DEST_PIN_SIZE * 1.5}px;
+      display:flex;align-items:center;justify-content:center;
+      filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    ">${DEST_PIN_SVG}</div>`,
+    iconSize: [DEST_PIN_SIZE, DEST_PIN_SIZE * 1.5],
+    iconAnchor: [DEST_PIN_SIZE / 2, DEST_PIN_SIZE * 1.5],
   })
 }
 
@@ -97,21 +116,28 @@ function CrowdRiskBadge({ risk }: { risk: CrowdRisk }) {
   )
 }
 
+type MapDestination = { name: string; location: string; coords: { lat: number; lon: number } }
+
 export function BusMapInner({
   vehicles,
   crowdRisk,
   effectiveLocation: effectiveLocationProp,
   locationStatus,
   onRequestLocation,
+  destination,
+  walkingRoute,
 }: {
   vehicles: BusVehicle[]
   crowdRisk: CrowdRisk | null
   effectiveLocation?: [number, number]
   locationStatus?: LocationStatus
   onRequestLocation?: () => void
+  destination?: MapDestination | null
+  walkingRoute?: [number, number][] | null
 }) {
   const icon = busMarkerIcon()
   const stopIcon = stopPinIcon()
+  const destIcon = destPinIcon()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
   const [centerTrigger, setCenterTrigger] = useState(0)
   const watchIdRef = useRef<number | null>(null)
@@ -195,6 +221,33 @@ export function BusMapInner({
                 : "You are here"}
             </Tooltip>
           </CircleMarker>
+        )}
+        {walkingRoute && walkingRoute.length > 0 && (
+          <Polyline
+            positions={walkingRoute}
+            pathOptions={{
+              color: "#C5050C",
+              weight: 5,
+              opacity: 0.85,
+              lineJoin: "round",
+              lineCap: "round",
+            }}
+          />
+        )}
+        {destination?.coords && (
+          <Marker
+            key="destination"
+            position={[destination.coords.lat, destination.coords.lon]}
+            icon={destIcon}
+          >
+            <Tooltip direction="top" offset={[0, -DEST_PIN_SIZE]} opacity={0.95} permanent={false}>
+              <strong>Your destination</strong>
+              <br />
+              {destination.name}
+              <br />
+              <span style={{ fontSize: "11px", color: "#666" }}>{destination.location}</span>
+            </Tooltip>
+          </Marker>
         )}
         {STOPS.map((stop) => {
         const lat = parseFloat(stop.stop_lat)
