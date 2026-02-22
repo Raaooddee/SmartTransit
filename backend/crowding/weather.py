@@ -12,8 +12,8 @@ import requests
 MADISON_LAT = 43.0731
 MADISON_LON = -89.4012
 OPEN_METEO_BASE = os.environ.get("OPEN_METEO_BASE_URL", "https://api.open-meteo.com")
-VERY_COLD_F = 20
-VERY_COLD_C = (VERY_COLD_F - 32) * (5 / 9)  # ~ -6.67
+VERY_COLD_F = 32
+VERY_COLD_C = (VERY_COLD_F - 32) * (5 / 9)  # 0
 
 # WMO: 61-67 rain, 71-77 snow, 80-82 showers, 85-86 snow showers
 PRECIPITATION_CODES = {

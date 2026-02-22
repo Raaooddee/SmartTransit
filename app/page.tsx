@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { mockNextClass } from "@/lib/mock"
-import type { NextClassResponse, ScheduleClass } from "@/lib/types"
+import type { NextClassResponse, ScheduleClass, BusVehicle } from "@/lib/types"
 import { FALLBACK_LOCATION } from "@/lib/constants"
 import type { LocationStatus } from "@/components/NearestStopCard"
 import { Badge } from "@/components/ui/badge"
@@ -77,7 +77,7 @@ export default function Home() {
   const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [showWalkingRoute, setShowWalkingRoute] = useState(false)
   const [walkingRoutePath, setWalkingRoutePath] = useState<[number, number][] | null>(null)
-  const [leaveInPredictions, setLeaveInPredictions] = useState<{ prdctdn?: string }[]>([])
+  const [leaveInPredictions, setLeaveInPredictions] = useState<{ vid?: string; prdctdn?: string }[]>([])
   const [leaveInNoBus30Min, setLeaveInNoBus30Min] = useState(false)
   const [leaveInError, setLeaveInError] = useState(false)
   const [leaveFromCoords, setLeaveFromCoords] = useState<{ lat: number; lon: number } | null>(null)
@@ -87,6 +87,8 @@ export default function Home() {
   const [leaveFromDropdownOpen, setLeaveFromDropdownOpen] = useState(false)
   const [leaveFromPanelOpen, setLeaveFromPanelOpen] = useState(false)
   const [activeBusCount, setActiveBusCount] = useState<number | null>(null)
+  const [vehicles, setVehicles] = useState<BusVehicle[]>([])
+  const [sidebarCrowdRisk, setSidebarCrowdRisk] = useState<NextClassResponse["crowd_risk"] | null>(null)
   const leaveFromDropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -171,8 +173,12 @@ export default function Home() {
         .then((r) => r.json())
         .then((d) => {
           setActiveBusCount(d.count ?? 0)
+          setVehicles((d.vehicles ?? []) as BusVehicle[])
         })
-        .catch(() => setActiveBusCount(null))
+        .catch(() => {
+          setActiveBusCount(null)
+          setVehicles([])
+        })
     }
     fetchBusCount()
     const interval = setInterval(fetchBusCount, POLL_MS)
@@ -339,6 +345,30 @@ export default function Home() {
     const interval = setInterval(fetchLeaveIn, POLL_MS)
     return () => clearInterval(interval)
   }, [nearestStopForLeave?.stop_id])
+
+  // Sidebar crowd risk: single bus → that bus's level; multiple buses → next bus at nearest stop
+  useEffect(() => {
+    let targetStop: string | null = null
+    if (vehicles.length === 1) {
+      const stop = (vehicles[0].next_stop_name ?? vehicles[0].next_stop_id ?? "").trim()
+      if (stop) targetStop = stop
+    } else if (vehicles.length > 1 && leaveInPredictions[0]?.vid) {
+      const nextBus = vehicles.find((v) => v.vid === leaveInPredictions[0].vid)
+      const stop = (nextBus?.next_stop_name ?? nextBus?.next_stop_id ?? "").trim()
+      if (stop) targetStop = stop
+    }
+    if (!targetStop) {
+      setSidebarCrowdRisk(null)
+      return
+    }
+    fetch(`/api/crowding?route=80&stop=${encodeURIComponent(targetStop)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.crowd_risk) setSidebarCrowdRisk(d.crowd_risk)
+        else setSidebarCrowdRisk(null)
+      })
+      .catch(() => setSidebarCrowdRisk(null))
+  }, [vehicles, leaveInPredictions])
 
   // Calculate next bus arrival time at nearest stop
   const [currentTime, setCurrentTime] = useState(() => new Date())
@@ -547,7 +577,7 @@ export default function Home() {
                   <Users className="h-3.5 w-3.5 text-gray-500" />
                   <span className="text-xs text-gray-600">Crowd</span>
                 </div>
-                {riskBadge(data.crowd_risk)}
+                {riskBadge(sidebarCrowdRisk ?? data.crowd_risk)}
               </div>
               <div className="rounded-xl border border-gray-200 bg-[#F7F7F7] px-3 py-2.5">
                 <div className="flex items-center gap-2 mb-1">

@@ -46,6 +46,7 @@ def compute_crowding_from_features(
 
     if weather.get("is_precipitating"):
         score += 0.2
+    # is_very_cold: temp < 32°F (see weather.VERY_COLD_F)
     if weather.get("is_very_cold"):
         score += 0.15
 

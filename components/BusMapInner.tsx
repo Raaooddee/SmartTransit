@@ -141,7 +141,7 @@ type LeaveFrom = { coords: { lat: number; lon: number }; label: string }
 
 export function BusMapInner({
   vehicles,
-  crowdRisk,
+  crowdRiskByStop,
   effectiveLocation: effectiveLocationProp,
   locationStatus,
   onRequestLocation,
@@ -150,7 +150,7 @@ export function BusMapInner({
   leaveFrom,
 }: {
   vehicles: BusVehicle[]
-  crowdRisk: CrowdRisk | null
+  crowdRiskByStop: Record<string, CrowdRisk>
   effectiveLocation?: [number, number]
   locationStatus?: LocationStatus
   onRequestLocation?: () => void
@@ -336,12 +336,16 @@ export function BusMapInner({
                   Passengers (psgld): {v.psgld}
                 </>
               )}
-              {crowdRisk && (
-                <>
-                  <br />
-                  <CrowdRiskBadge risk={crowdRisk} />
-                </>
-              )}
+              {(() => {
+                const stopKey = (v.next_stop_name ?? v.next_stop_id ?? "").trim()
+                const risk = stopKey ? crowdRiskByStop[stopKey] : null
+                return risk ? (
+                  <>
+                    <br />
+                    <CrowdRiskBadge risk={risk} />
+                  </>
+                ) : null
+              })()}
             </Tooltip>
           </Marker>
         )

@@ -5,6 +5,8 @@ import type { BusVehicle } from "@/lib/types"
 import type { LocationStatus } from "@/components/NearestStopCard"
 
 type CrowdRisk = "low" | "medium" | "high"
+/** Map from stop identifier (next_stop_name or next_stop_id) to crowd risk */
+export type CrowdRiskByStop = Record<string, CrowdRisk>
 
 const POLL_MS = 60 * 1000 // every minute
 
@@ -34,11 +36,11 @@ export function BusMap({
   leaveFrom,
 }: BusMapProps = {}) {
   const [vehicles, setVehicles] = useState<BusVehicle[]>([])
-  const [crowdRisk, setCrowdRisk] = useState<CrowdRisk | null>(null)
+  const [crowdRiskByStop, setCrowdRiskByStop] = useState<CrowdRiskByStop>({})
   const [MapComponent, setMapComponent] = useState<
     React.ComponentType<{
       vehicles: BusVehicle[]
-      crowdRisk: CrowdRisk | null
+      crowdRiskByStop: CrowdRiskByStop
       effectiveLocation?: [number, number]
       locationStatus?: LocationStatus
       onRequestLocation?: () => void
@@ -51,14 +53,36 @@ export function BusMap({
   const fetchData = () => {
     fetch("/api/buses")
       .then((r) => r.json())
-      .then((d) => setVehicles(d.vehicles || []))
-
-    fetch("/api/crowding?route=80")
-      .then((r) => r.json())
       .then((d) => {
-        if (d.crowd_risk) setCrowdRisk(d.crowd_risk)
+        const v = (d.vehicles || []) as BusVehicle[]
+        setVehicles(v)
+        const stopKeys = [
+          ...new Set(
+            v
+              .map((b) => (b.next_stop_name ?? b.next_stop_id ?? "").trim())
+              .filter(Boolean)
+          ),
+        ]
+        if (stopKeys.length === 0) {
+          setCrowdRiskByStop({})
+          return
+        }
+        Promise.all(
+          stopKeys.map((stop) =>
+            fetch(
+              `/api/crowding?route=80&stop=${encodeURIComponent(stop)}`
+            ).then((res) => res.json())
+          )
+        )
+          .then((results) => {
+            const map: CrowdRiskByStop = {}
+            stopKeys.forEach((key, i) => {
+              if (results[i]?.crowd_risk) map[key] = results[i].crowd_risk
+            })
+            setCrowdRiskByStop(map)
+          })
+          .catch(() => setCrowdRiskByStop({}))
       })
-      .catch(() => setCrowdRisk(null))
   }
 
   useEffect(() => {
@@ -82,7 +106,7 @@ export function BusMap({
   return (
     <MapComponent
       vehicles={vehicles}
-      crowdRisk={crowdRisk}
+      crowdRiskByStop={crowdRiskByStop}
       effectiveLocation={effectiveLocation}
       locationStatus={locationStatus}
       onRequestLocation={onRequestLocation}
