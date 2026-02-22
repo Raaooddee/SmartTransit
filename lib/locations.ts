@@ -1,14 +1,75 @@
 /**
- * Known UW–Madison locations: all campus buildings + UW-area apartments.
- * Data and coordinates from lib/locationCoordinates.ts.
+ * Known UW–Madison locations: uw_buildings + extra + downtown Madison + every UW building & housing (uwBuildingsAndHousing).
  */
-import type { LocationEntry } from "./locationCoordinates"
-import { LOCATION_ENTRIES } from "./locationCoordinates"
+import uwBuildings from "@/data/uw_buildings.json"
+import downtownMadisonBuildings from "@/data/downtown_madison_buildings.json"
+import uwBuildingsAndHousing from "@/data/uw_buildings_and_housing.json"
 
-export const KNOWN_LOCATIONS = LOCATION_ENTRIES.map((e: LocationEntry) => e.name) as readonly string[]
+export type LocationEntry = { name: string; lat: number; lon: number }
+
+type UwBuilding = { name: string; lat: number; lon: number }
+const UW_BUILDINGS = uwBuildings as UwBuilding[]
+
+function titleCase(s: string): string {
+  return s
+    .trim()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ")
+}
+
+/** Additional UW buildings / aliases not in OSM or uw_buildings (add only if name not already present). */
+const EXTRA_UW_LOCATIONS: LocationEntry[] = [
+  { name: "College Library", lat: 43.0768, lon: -89.3985 },
+  { name: "Eagle Heights Building 101", lat: 43.0785, lon: -89.434 },
+  { name: "Helen C. White Hall", lat: 43.0768, lon: -89.3985 },
+  { name: "Memorial Union", lat: 43.0765, lon: -89.3962 },
+  { name: "UW Medical Foundation Centennial Building", lat: 43.0754164, lon: -89.4330399 },
+  { name: "Van Vleck Hall", lat: 43.0748474, lon: -89.4048878 },
+  { name: "Veterans Administration Hospital", lat: 43.0745238, lon: -89.4309833 },
+  { name: "Veterinary Medicine North", lat: 43.0762, lon: -89.4203 },
+  { name: "Vilas Hall", lat: 43.0726401, lon: -89.399794 },
+  { name: "Waisman Center", lat: 43.0783873, lon: -89.434289 },
+  { name: "Walnut Street Greenhouse", lat: 43.0760167, lon: -89.4240759 },
+  { name: "Walnut Street Heating and Cooling Plant", lat: 43.074329, lon: -89.4242948 },
+  { name: "WARF Office Building", lat: 43.076288, lon: -89.42598 },
+  { name: "Water Science and Engineering Laboratory", lat: 43.0771024, lon: -89.4018671 },
+  { name: "Weeks Hall for Geological Sciences", lat: 43.0732, lon: -89.404 },
+  { name: "Wisconsin Institutes for Medical Research", lat: 43.0779807, lon: -89.4316237 },
+  { name: "Wisconsin Veterinary Diagnostic Laboratory", lat: 43.074427, lon: -89.4214047 },
+]
+
+/** All locations: uw_buildings (title-case) + extra list + downtown Madison buildings; dedupe by name. */
+const existingNames = new Set<string>()
+const schoolBuildingEntries: LocationEntry[] = UW_BUILDINGS.map((b) => ({
+  name: titleCase(b.name),
+  lat: b.lat,
+  lon: b.lon,
+}))
+for (const e of schoolBuildingEntries) existingNames.add(e.name)
+const extraEntries: LocationEntry[] = EXTRA_UW_LOCATIONS.filter(
+  (e: LocationEntry) => !existingNames.has(e.name)
+)
+for (const e of extraEntries) existingNames.add(e.name)
+const downtownEntries: LocationEntry[] = (
+  downtownMadisonBuildings as LocationEntry[]
+).filter((e: LocationEntry) => !existingNames.has(e.name))
+for (const e of downtownEntries) existingNames.add(e.name)
+const housingEntries: LocationEntry[] = (uwBuildingsAndHousing as LocationEntry[]).filter(
+  (e: LocationEntry) => !existingNames.has(e.name)
+)
+
+const ALL_LOCATION_ENTRIES: LocationEntry[] = [
+  ...schoolBuildingEntries,
+  ...extraEntries,
+  ...downtownEntries,
+  ...housingEntries,
+]
+
+export const KNOWN_LOCATIONS = ALL_LOCATION_ENTRIES.map((e: LocationEntry) => e.name) as readonly string[]
 
 export const LOCATION_COORDINATES: Record<string, { lat: number; lon: number }> = Object.fromEntries(
-  LOCATION_ENTRIES.map((e: LocationEntry) => [e.name, { lat: e.lat, lon: e.lon }])
+  ALL_LOCATION_ENTRIES.map((e: LocationEntry) => [e.name, { lat: e.lat, lon: e.lon }])
 )
 
 export function getLocationCoordinates(name: string): { lat: number; lon: number } | undefined {
