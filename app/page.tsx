@@ -500,17 +500,28 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[#F7F7F7]">
-      <header className="relative flex h-16 shrink-0 items-center justify-center bg-[#C5050C] px-6 text-white shadow-header transition-smooth">
-        <div className="absolute right-6 flex items-center gap-2 text-[1.05em]">
-          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white/95 backdrop-blur-sm">
+    <div className="flex h-screen min-w-0 flex-col overflow-x-hidden bg-[#F7F7F7]">
+      <header className="relative flex h-14 shrink-0 items-center justify-between gap-3 bg-[#C5050C] px-3 text-white shadow-header transition-smooth sm:h-16 sm:justify-center sm:px-6">
+        <Link href="/" className="flex min-w-0 shrink items-center gap-2 sm:gap-3">
+          <SmartTransitLogo className="h-9 w-9 shrink-0 object-contain [mix-blend-mode:screen] pointer-events-none sm:h-10 sm:w-10" />
+          <div className="min-w-0 flex flex-col items-start pointer-events-none">
+            <h1 className="text-xl font-bold tracking-tight text-white truncate sm:text-2xl md:text-3xl">
+              SmartTransit
+            </h1>
+            <p className="text-[10px] font-medium tracking-wide text-white/90 sm:text-xs">
+              Arrive on time, every time
+            </p>
+          </div>
+        </Link>
+        <div className="flex shrink-0 items-center gap-1.5 text-[1.05em] sm:absolute sm:right-6 sm:gap-2">
+          <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/95 backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
             Route 80
           </span>
           <Link href="/schedule">
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20 font-semibold transition-smooth cursor-pointer"
+              className="h-8 text-white hover:bg-white/20 font-semibold transition-smooth cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
             >
               Schedule
             </Button>
@@ -519,26 +530,144 @@ export default function Home() {
             variant="ghost"
             size="sm"
             onClick={() => setAboutOpen(true)}
-            className="text-white hover:bg-white/20 font-semibold transition-smooth cursor-pointer"
+            className="h-8 text-white hover:bg-white/20 font-semibold transition-smooth cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
           >
             About
           </Button>
         </div>
-        <Link href="/" className="flex items-center gap-0 cursor-pointer">
-          <SmartTransitLogo className="mt-1 h-44 w-44 shrink-0 object-contain [mix-blend-mode:screen] pointer-events-none" />
-          <div className="-ml-12 flex flex-col pointer-events-none">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
-              SmartTransit
-            </h1>
-            <p className="text-xs font-medium tracking-wide text-white/90">
-              Arrive on time, every time
-            </p>
-          </div>
-        </Link>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="flex w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-5 shadow-panel transition-smooth">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
+        <main className="relative order-1 min-h-[50vh] min-w-0 flex-1 border-b border-gray-200 bg-[#F7F7F7] md:order-2 md:min-h-0 md:border-b-0 md:border-l md:border-gray-200">
+          {/* Leave from another building — top right over map */}
+          <div ref={leaveFromDropdownRef} className="absolute right-16 bottom-4 z-[1001]">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLeaveFromPanelOpen((o) => !o)}
+              className="bg-white/95 shadow-panel hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900 transition-smooth hover-lift-sm cursor-pointer"
+            >
+              <MapPin className="h-4 w-4 shrink-0 text-[#C5050C]" />
+              {leaveFromLabel ? leaveFromLabel : "Leave from another building?"}
+            </Button>
+            {leaveFromPanelOpen && (
+              <div className="absolute right-0 bottom-full z-[1011] mb-2 w-80 rounded-xl border border-gray-200 bg-white p-3 shadow-panel animate-expand-in">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#C5050C]">Leave from another building?</p>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="e.g. Bascom Hall, Morgridge"
+                      value={leaveFromInput}
+                      onChange={(e) => {
+                        setLeaveFromInput(e.target.value)
+                        setLeaveFromDropdownOpen(true)
+                      }}
+                      onFocus={() => setLeaveFromDropdownOpen(true)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          const canonical = bestMatchOrInput(leaveFromInput.trim())
+                          const coords = getLocationCoordinates(canonical)
+                          if (coords) {
+                            setLeaveFromCoords(coords)
+                            setLeaveFromLabel(canonical)
+                            setLeaveFromInput(canonical)
+                            setLeaveFromDropdownOpen(false)
+                            setLeaveFromPanelOpen(false)
+                          } else {
+                            handleUseLeaveFrom()
+                          }
+                        }
+                      }}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C] transition-smooth shadow-input"
+                    />
+                    {leaveFromDropdownOpen && (() => {
+                      const matchedNames = fuzzyMatchLocations(leaveFromInput, 30)
+                      return (
+                        <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-panel animate-expand-in">
+                          {matchedNames.length === 0 ? (
+                            <li className="px-3 py-2 text-xs text-gray-500">Type an address and click Use to geocode.</li>
+                          ) : (
+                            matchedNames.map((name) => {
+                              const coords = getLocationCoordinates(name)
+                              if (!coords) return null
+                              return (
+                                <li key={name}>
+                                  <button
+                                    type="button"
+                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C] transition-smooth cursor-pointer"
+                                    onClick={() => {
+                                      setLeaveFromCoords(coords)
+                                      setLeaveFromLabel(name)
+                                      setLeaveFromInput(name)
+                                      setLeaveFromDropdownOpen(false)
+                                      setLeaveFromPanelOpen(false)
+                                    }}
+                                  >
+                                    {name}
+                                  </button>
+                                </li>
+                              )
+                            })
+                          )}
+                        </ul>
+                      )
+                    })()}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="shrink-0 bg-[#C5050C] text-white hover:bg-[#9B0000] cursor-pointer"
+                    onClick={() => {
+                      handleUseLeaveFrom()
+                      setLeaveFromPanelOpen(false)
+                    }}
+                    disabled={!leaveFromInput.trim() || leaveFromLoading}
+                  >
+                    {leaveFromLoading ? "…" : "Use"}
+                  </Button>
+                  {(leaveFromCoords || leaveFromLabel) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 cursor-pointer"
+                      onClick={() => {
+                        setLeaveFromCoords(null)
+                        setLeaveFromLabel(null)
+                        setLeaveFromInput("")
+                        setLeaveFromDropdownOpen(false)
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {leaveFromLabel && (
+                  <p className="mt-2 text-xs text-[#C5050C]">
+                    Using <strong>{leaveFromLabel}</strong> for stop, walk vs bus, and route.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+          <BusMap
+            effectiveLocation={effectiveLocation}
+            locationStatus={locationStatus}
+            onRequestLocation={handleRequestLocation}
+            destination={nextDestination}
+            walkingRoute={showWalkingRoute ? walkingRoutePath : null}
+            leaveFrom={
+              leaveFromCoords && leaveFromLabel
+                ? { coords: leaveFromCoords, label: leaveFromLabel }
+                : null
+            }
+          />
+        </main>
+
+        <aside className="order-2 flex min-w-0 w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-4 shadow-panel transition-smooth break-words sm:p-5 md:order-1 md:max-h-none">
           {/* Header with schedule button */}
           <div className="mb-6 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
@@ -753,135 +882,6 @@ export default function Home() {
             )}
           </div>
         </aside>
-
-        <main className="relative flex-1 border-l border-gray-200 bg-[#F7F7F7]">
-          {/* Leave from another building — top right over map */}
-          <div ref={leaveFromDropdownRef} className="absolute right-16 bottom-4 z-[1001]">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setLeaveFromPanelOpen((o) => !o)}
-              className="bg-white/95 shadow-panel hover:bg-white flex items-center gap-1.5 border-gray-200 text-gray-900 transition-smooth hover-lift-sm cursor-pointer"
-            >
-              <MapPin className="h-4 w-4 shrink-0 text-[#C5050C]" />
-              {leaveFromLabel ? leaveFromLabel : "Leave from another building?"}
-            </Button>
-            {leaveFromPanelOpen && (
-              <div className="absolute right-0 bottom-full z-[1011] mb-2 w-80 rounded-xl border border-gray-200 bg-white p-3 shadow-panel animate-expand-in">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#C5050C]">Leave from another building?</p>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      placeholder="e.g. Bascom Hall, Morgridge"
-                      value={leaveFromInput}
-                      onChange={(e) => {
-                        setLeaveFromInput(e.target.value)
-                        setLeaveFromDropdownOpen(true)
-                      }}
-                      onFocus={() => setLeaveFromDropdownOpen(true)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          const canonical = bestMatchOrInput(leaveFromInput.trim())
-                          const coords = getLocationCoordinates(canonical)
-                          if (coords) {
-                            setLeaveFromCoords(coords)
-                            setLeaveFromLabel(canonical)
-                            setLeaveFromInput(canonical)
-                            setLeaveFromDropdownOpen(false)
-                            setLeaveFromPanelOpen(false)
-                          } else {
-                            handleUseLeaveFrom()
-                          }
-                        }
-                      }}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#C5050C] focus:outline-none focus:ring-1 focus:ring-[#C5050C] transition-smooth shadow-input"
-                    />
-                    {leaveFromDropdownOpen && (() => {
-                      const matchedNames = fuzzyMatchLocations(leaveFromInput, 30)
-                      return (
-                        <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-panel animate-expand-in">
-                          {matchedNames.length === 0 ? (
-                            <li className="px-3 py-2 text-xs text-gray-500">Type an address and click Use to geocode.</li>
-                          ) : (
-                            matchedNames.map((name) => {
-                              const coords = getLocationCoordinates(name)
-                              if (!coords) return null
-                              return (
-                                <li key={name}>
-                                  <button
-                                    type="button"
-                                    className="w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-[#C5050C]/10 hover:text-[#C5050C] transition-smooth cursor-pointer"
-                                    onClick={() => {
-                                      setLeaveFromCoords(coords)
-                                      setLeaveFromLabel(name)
-                                      setLeaveFromInput(name)
-                                      setLeaveFromDropdownOpen(false)
-                                      setLeaveFromPanelOpen(false)
-                                    }}
-                                  >
-                                    {name}
-                                  </button>
-                                </li>
-                              )
-                            })
-                          )}
-                        </ul>
-                      )
-                    })()}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="shrink-0 bg-[#C5050C] text-white hover:bg-[#9B0000] cursor-pointer"
-                    onClick={() => {
-                      handleUseLeaveFrom()
-                      setLeaveFromPanelOpen(false)
-                    }}
-                    disabled={!leaveFromInput.trim() || leaveFromLoading}
-                  >
-                    {leaveFromLoading ? "…" : "Use"}
-                  </Button>
-                  {(leaveFromCoords || leaveFromLabel) && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0 cursor-pointer"
-                      onClick={() => {
-                        setLeaveFromCoords(null)
-                        setLeaveFromLabel(null)
-                        setLeaveFromInput("")
-                        setLeaveFromDropdownOpen(false)
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-                {leaveFromLabel && (
-                  <p className="mt-2 text-xs text-[#C5050C]">
-                    Using <strong>{leaveFromLabel}</strong> for stop, walk vs bus, and route.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          <BusMap
-            effectiveLocation={effectiveLocation}
-            locationStatus={locationStatus}
-            onRequestLocation={handleRequestLocation}
-            destination={nextDestination}
-            walkingRoute={showWalkingRoute ? walkingRoutePath : null}
-            leaveFrom={
-              leaveFromCoords && leaveFromLabel
-                ? { coords: leaveFromCoords, label: leaveFromLabel }
-                : null
-            }
-          />
-        </main>
       </div>
 
       <ImportScheduleOverlay
