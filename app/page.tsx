@@ -667,7 +667,7 @@ export default function Home() {
           />
         </main>
 
-        <aside className="order-2 flex min-w-0 w-full max-w-[380px] flex-col overflow-y-auto border-r border-gray-200 bg-white p-4 shadow-panel transition-smooth break-words sm:p-5 md:order-1 md:max-h-none">
+        <aside className="order-2 flex min-w-0 w-full flex-col overflow-y-auto border-t border-gray-200 bg-white p-4 shadow-panel transition-smooth break-words sm:p-5 md:order-1 md:max-h-none md:max-w-[380px] md:border-t-0 md:border-r">
           {/* Header with schedule button */}
           <div className="mb-6 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-[#C5050C]">
